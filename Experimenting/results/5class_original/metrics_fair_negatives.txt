@@ -1,0 +1,17 @@
+# 5class_original  [Number A — fair (normalised 1:1) negatives]  (single-class lesion / no-lesion, 74 test imgs)
+# classes: lesion(any)
+# IoU match threshold: 0.5
+
+== conf_0.25 ==
+  box     P=0.209 R=0.158 F1=0.180  (TP=9 FP=34 FN=48)
+  loc/hit IoU=0.659 IoP=0.727 IoG=0.892  (n=9)
+  mean best IoU per GT (any conf) = 0.182
+  image   screening_acc=0.622  det_rate_pos=0.595  false_alarm_neg=0.351  (pos=37 neg=37)
+  counts  22/37 lesion-imgs flagged · 13/37 neg false-alarm · 35/74 total flagged
+
+== conf_0.001 ==
+  box     P=0.012 R=0.632 F1=0.024  (TP=36 FP=2977 FN=21)
+  loc/hit IoU=0.629 IoP=0.756 IoG=0.827  (n=36)
+  mean best IoU per GT (any conf) = 0.556
+  image   screening_acc=0.500  det_rate_pos=1.000  false_alarm_neg=1.000  (pos=37 neg=37)
+  counts  37/37 lesion-imgs flagged · 37/37 neg false-alarm · 74/74 total flagged

@@ -1,0 +1,19 @@
+{
+  "experiment": "5class_original",
+  "task": "detect",
+  "model_weights": "yolov8n.pt",
+  "class_names": [
+    "Leukoplakia",
+    "Erythroplakia",
+    "OSMF",
+    "Lichen_Planus",
+    "NH_Ulcers"
+  ],
+  "data_yaml": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/_datasets/5class_original/data.yaml",
+  "epochs": 100,
+  "imgsz": 640,
+  "batch": 8,
+  "amp": false,
+  "seed": 42,
+  "device": "0"
+}

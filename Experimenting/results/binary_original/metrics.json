@@ -1,0 +1,81 @@
+{
+  "experiment": "binary_original",
+  "task": "detect",
+  "class_names": [
+    "lesion"
+  ],
+  "n_test_images": 37,
+  "iou_match_threshold": 0.5,
+  "metrics": {
+    "conf_0.25": {
+      "conf": 0.25,
+      "overall": {
+        "tp": 21,
+        "fp": 34,
+        "fn": 36,
+        "precision": 0.3818,
+        "recall": 0.3684,
+        "f1": 0.375
+      },
+      "per_class": {
+        "0": {
+          "tp": 21,
+          "fp": 34,
+          "fn": 36,
+          "precision": 0.3818,
+          "recall": 0.3684,
+          "f1": 0.375
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6526,
+        "mean_iop": 0.8121,
+        "mean_iog": 0.8013,
+        "n": 21
+      },
+      "mean_best_iou_per_gt": 0.3327,
+      "image_level": {
+        "screening_accuracy": 0.8378,
+        "detection_rate_on_positives": 0.8378,
+        "false_alarm_rate_on_negatives": 0.0,
+        "positives": 37,
+        "negatives": 0
+      }
+    },
+    "conf_0.001": {
+      "conf": 0.001,
+      "overall": {
+        "tp": 44,
+        "fp": 2211,
+        "fn": 13,
+        "precision": 0.0195,
+        "recall": 0.7719,
+        "f1": 0.0381
+      },
+      "per_class": {
+        "0": {
+          "tp": 44,
+          "fp": 2211,
+          "fn": 13,
+          "precision": 0.0195,
+          "recall": 0.7719,
+          "f1": 0.0381
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6252,
+        "mean_iop": 0.7678,
+        "mean_iog": 0.8136,
+        "n": 44
+      },
+      "mean_best_iou_per_gt": 0.6106,
+      "image_level": {
+        "screening_accuracy": 1.0,
+        "detection_rate_on_positives": 1.0,
+        "false_alarm_rate_on_negatives": 0.0,
+        "positives": 37,
+        "negatives": 0
+      }
+    }
+  }
+}

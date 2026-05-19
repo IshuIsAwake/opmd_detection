@@ -1,0 +1,84 @@
+{
+  "experiment": "binary_plus_roboflow  [re-eval with negatives]",
+  "task": "single-class lesion / no-lesion",
+  "class_names": [
+    "lesion(any)"
+  ],
+  "n_test_images": 607,
+  "n_positive_images": 37,
+  "n_negative_images": 570,
+  "weights": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/results/binary_plus_roboflow/train/weights/best.pt",
+  "iou_match_threshold": 0.5,
+  "metrics": {
+    "conf_0.25": {
+      "conf": 0.25,
+      "overall": {
+        "tp": 17,
+        "fp": 242,
+        "fn": 40,
+        "precision": 0.0656,
+        "recall": 0.2982,
+        "f1": 0.1076
+      },
+      "per_class": {
+        "0": {
+          "tp": 17,
+          "fp": 242,
+          "fn": 40,
+          "precision": 0.0656,
+          "recall": 0.2982,
+          "f1": 0.1076
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6921,
+        "mean_iop": 0.8344,
+        "mean_iog": 0.8367,
+        "n": 17
+      },
+      "mean_best_iou_per_gt": 0.2669,
+      "image_level": {
+        "screening_accuracy": 0.6886,
+        "detection_rate_on_positives": 0.7027,
+        "false_alarm_rate_on_negatives": 0.3123,
+        "positives": 37,
+        "negatives": 570
+      }
+    },
+    "conf_0.001": {
+      "conf": 0.001,
+      "overall": {
+        "tp": 48,
+        "fp": 61439,
+        "fn": 9,
+        "precision": 0.0008,
+        "recall": 0.8421,
+        "f1": 0.0016
+      },
+      "per_class": {
+        "0": {
+          "tp": 48,
+          "fp": 61439,
+          "fn": 9,
+          "precision": 0.0008,
+          "recall": 0.8421,
+          "f1": 0.0016
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6354,
+        "mean_iop": 0.7748,
+        "mean_iog": 0.8139,
+        "n": 48
+      },
+      "mean_best_iou_per_gt": 0.6698,
+      "image_level": {
+        "screening_accuracy": 0.061,
+        "detection_rate_on_positives": 1.0,
+        "false_alarm_rate_on_negatives": 1.0,
+        "positives": 37,
+        "negatives": 570
+      }
+    }
+  }
+}

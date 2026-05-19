@@ -1,0 +1,17 @@
+# binary_negatives  (detect, 74 test imgs)
+# classes: lesion
+# IoU match threshold: 0.5
+
+== conf_0.25 ==
+  box     P=0.488 R=0.368 F1=0.420  (TP=21 FP=22 FN=36)
+  loc/hit IoU=0.648 IoP=0.788 IoG=0.812  (n=21)
+  mean best IoU per GT (any conf) = 0.288
+  image   screening_acc=0.865  det_rate_pos=0.757  false_alarm_neg=0.027  (pos=37 neg=37)
+  counts  28/37 lesion-imgs flagged · 1/37 neg false-alarm · 29/74 total flagged
+
+== conf_0.001 ==
+  box     P=0.019 R=0.737 F1=0.036  (TP=42 FP=2218 FN=15)
+  loc/hit IoU=0.617 IoP=0.770 IoG=0.788  (n=42)
+  mean best IoU per GT (any conf) = 0.590
+  image   screening_acc=0.527  det_rate_pos=1.000  false_alarm_neg=0.946  (pos=37 neg=37)
+  counts  37/37 lesion-imgs flagged · 35/37 neg false-alarm · 72/74 total flagged

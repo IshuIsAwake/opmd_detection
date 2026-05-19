@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['Leukoplakia']
+
+roboflow:
+  workspace: oral-cancer-emoot
+  project: leukoplakia
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/oral-cancer-emoot/leukoplakia/dataset/2

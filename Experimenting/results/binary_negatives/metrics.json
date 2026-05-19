@@ -1,0 +1,89 @@
+{
+  "experiment": "binary_negatives",
+  "task": "detect",
+  "class_names": [
+    "lesion"
+  ],
+  "n_test_images": 74,
+  "iou_match_threshold": 0.5,
+  "metrics": {
+    "conf_0.25": {
+      "conf": 0.25,
+      "overall": {
+        "tp": 21,
+        "fp": 22,
+        "fn": 36,
+        "precision": 0.4884,
+        "recall": 0.3684,
+        "f1": 0.42
+      },
+      "per_class": {
+        "0": {
+          "tp": 21,
+          "fp": 22,
+          "fn": 36,
+          "precision": 0.4884,
+          "recall": 0.3684,
+          "f1": 0.42
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6485,
+        "mean_iop": 0.7881,
+        "mean_iog": 0.812,
+        "n": 21
+      },
+      "mean_best_iou_per_gt": 0.2878,
+      "image_level": {
+        "screening_accuracy": 0.8649,
+        "detection_rate_on_positives": 0.7568,
+        "false_alarm_rate_on_negatives": 0.027,
+        "positives": 37,
+        "negatives": 37,
+        "positives_flagged": 28,
+        "negatives_flagged": 1,
+        "total_flagged": 29,
+        "total_images": 74
+      }
+    },
+    "conf_0.001": {
+      "conf": 0.001,
+      "overall": {
+        "tp": 42,
+        "fp": 2218,
+        "fn": 15,
+        "precision": 0.0186,
+        "recall": 0.7368,
+        "f1": 0.0363
+      },
+      "per_class": {
+        "0": {
+          "tp": 42,
+          "fp": 2218,
+          "fn": 15,
+          "precision": 0.0186,
+          "recall": 0.7368,
+          "f1": 0.0363
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6166,
+        "mean_iop": 0.7696,
+        "mean_iog": 0.7881,
+        "n": 42
+      },
+      "mean_best_iou_per_gt": 0.5901,
+      "image_level": {
+        "screening_accuracy": 0.527,
+        "detection_rate_on_positives": 1.0,
+        "false_alarm_rate_on_negatives": 0.9459,
+        "positives": 37,
+        "negatives": 37,
+        "positives_flagged": 37,
+        "negatives_flagged": 35,
+        "total_flagged": 72,
+        "total_images": 74
+      }
+    }
+  }
+}

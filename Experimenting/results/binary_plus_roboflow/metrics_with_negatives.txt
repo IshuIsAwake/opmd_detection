@@ -1,0 +1,15 @@
+# binary_plus_roboflow  [re-eval with negatives]  (single-class lesion / no-lesion, 607 test imgs)
+# classes: lesion(any)
+# IoU match threshold: 0.5
+
+== conf_0.25 ==
+  box     P=0.066 R=0.298 F1=0.108  (TP=17 FP=242 FN=40)
+  loc/hit IoU=0.692 IoP=0.834 IoG=0.837  (n=17)
+  mean best IoU per GT (any conf) = 0.267
+  image   screening_acc=0.689  det_rate_pos=0.703  false_alarm_neg=0.312  (pos=37 neg=570)
+
+== conf_0.001 ==
+  box     P=0.001 R=0.842 F1=0.002  (TP=48 FP=61439 FN=9)
+  loc/hit IoU=0.635 IoP=0.775 IoG=0.814  (n=48)
+  mean best IoU per GT (any conf) = 0.670
+  image   screening_acc=0.061  det_rate_pos=1.000  false_alarm_neg=1.000  (pos=37 neg=570)

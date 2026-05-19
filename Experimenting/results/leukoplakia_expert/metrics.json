@@ -1,0 +1,81 @@
+{
+  "experiment": "leukoplakia_expert",
+  "task": "obb",
+  "class_names": [
+    "Leukoplakia"
+  ],
+  "n_test_images": 932,
+  "iou_match_threshold": 0.5,
+  "metrics": {
+    "conf_0.25": {
+      "conf": 0.25,
+      "overall": {
+        "tp": 23,
+        "fp": 714,
+        "fn": 89,
+        "precision": 0.0312,
+        "recall": 0.2054,
+        "f1": 0.0542
+      },
+      "per_class": {
+        "0": {
+          "tp": 23,
+          "fp": 714,
+          "fn": 89,
+          "precision": 0.0312,
+          "recall": 0.2054,
+          "f1": 0.0542
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6723,
+        "mean_iop": 0.8516,
+        "mean_iog": 0.7787,
+        "n": 23
+      },
+      "mean_best_iou_per_gt": 0.2615,
+      "image_level": {
+        "screening_accuracy": 0.4989,
+        "detection_rate_on_positives": 0.9565,
+        "false_alarm_rate_on_negatives": 0.5248,
+        "positives": 46,
+        "negatives": 886
+      }
+    },
+    "conf_0.001": {
+      "conf": 0.001,
+      "overall": {
+        "tp": 38,
+        "fp": 28661,
+        "fn": 74,
+        "precision": 0.0013,
+        "recall": 0.3393,
+        "f1": 0.0026
+      },
+      "per_class": {
+        "0": {
+          "tp": 38,
+          "fp": 28661,
+          "fn": 74,
+          "precision": 0.0013,
+          "recall": 0.3393,
+          "f1": 0.0026
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6448,
+        "mean_iop": 0.7885,
+        "mean_iog": 0.815,
+        "n": 38
+      },
+      "mean_best_iou_per_gt": 0.4164,
+      "image_level": {
+        "screening_accuracy": 0.0494,
+        "detection_rate_on_positives": 1.0,
+        "false_alarm_rate_on_negatives": 1.0,
+        "positives": 46,
+        "negatives": 886
+      }
+    }
+  }
+}

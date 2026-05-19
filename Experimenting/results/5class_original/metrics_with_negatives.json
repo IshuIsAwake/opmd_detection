@@ -1,0 +1,84 @@
+{
+  "experiment": "5class_original  [re-eval with negatives]",
+  "task": "single-class lesion / no-lesion",
+  "class_names": [
+    "lesion(any)"
+  ],
+  "n_test_images": 607,
+  "n_positive_images": 37,
+  "n_negative_images": 570,
+  "weights": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/results/5class_original/train/weights/best.pt",
+  "iou_match_threshold": 0.5,
+  "metrics": {
+    "conf_0.25": {
+      "conf": 0.25,
+      "overall": {
+        "tp": 9,
+        "fp": 297,
+        "fn": 48,
+        "precision": 0.0294,
+        "recall": 0.1579,
+        "f1": 0.0496
+      },
+      "per_class": {
+        "0": {
+          "tp": 9,
+          "fp": 297,
+          "fn": 48,
+          "precision": 0.0294,
+          "recall": 0.1579,
+          "f1": 0.0496
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6588,
+        "mean_iop": 0.7274,
+        "mean_iog": 0.8917,
+        "n": 9
+      },
+      "mean_best_iou_per_gt": 0.182,
+      "image_level": {
+        "screening_accuracy": 0.6409,
+        "detection_rate_on_positives": 0.5946,
+        "false_alarm_rate_on_negatives": 0.3561,
+        "positives": 37,
+        "negatives": 570
+      }
+    },
+    "conf_0.001": {
+      "conf": 0.001,
+      "overall": {
+        "tp": 36,
+        "fp": 26210,
+        "fn": 21,
+        "precision": 0.0014,
+        "recall": 0.6316,
+        "f1": 0.0027
+      },
+      "per_class": {
+        "0": {
+          "tp": 36,
+          "fp": 26210,
+          "fn": 21,
+          "precision": 0.0014,
+          "recall": 0.6316,
+          "f1": 0.0027
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6291,
+        "mean_iop": 0.7562,
+        "mean_iog": 0.8269,
+        "n": 36
+      },
+      "mean_best_iou_per_gt": 0.5561,
+      "image_level": {
+        "screening_accuracy": 0.061,
+        "detection_rate_on_positives": 1.0,
+        "false_alarm_rate_on_negatives": 1.0,
+        "positives": 37,
+        "negatives": 570
+      }
+    }
+  }
+}

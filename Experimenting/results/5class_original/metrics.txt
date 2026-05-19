@@ -1,0 +1,25 @@
+# 5class_original  (detect, 37 test imgs)
+# classes: Leukoplakia, Erythroplakia, OSMF, Lichen_Planus, NH_Ulcers
+# IoU match threshold: 0.5
+
+== conf_0.25 ==
+  box     P=0.280 R=0.123 F1=0.171  (TP=7 FP=18 FN=50)
+  loc/hit IoU=0.658 IoP=0.704 IoG=0.915  (n=7)
+  mean best IoU per GT (any conf) = 0.140
+  image   screening_acc=0.595  det_rate_pos=0.595  false_alarm_neg=0.000  (pos=37 neg=0)
+    [Leukoplakia   ] P=0.000 R=0.000 F1=0.000
+    [Erythroplakia ] P=0.125 R=0.100 F1=0.111
+    [OSMF          ] P=0.000 R=0.000 F1=0.000
+    [Lichen_Planus ] P=0.400 R=0.286 F1=0.333
+    [NH_Ulcers     ] P=0.400 R=0.143 F1=0.210
+
+== conf_0.001 ==
+  box     P=0.023 R=0.526 F1=0.043  (TP=30 FP=1299 FN=27)
+  loc/hit IoU=0.629 IoP=0.776 IoG=0.813  (n=30)
+  mean best IoU per GT (any conf) = 0.489
+  image   screening_acc=1.000  det_rate_pos=1.000  false_alarm_neg=0.000  (pos=37 neg=0)
+    [Leukoplakia   ] P=0.013 R=0.222 F1=0.025
+    [Erythroplakia ] P=0.025 R=0.700 F1=0.048
+    [OSMF          ] P=0.026 R=0.500 F1=0.050
+    [Lichen_Planus ] P=0.018 R=0.643 F1=0.035
+    [NH_Ulcers     ] P=0.034 R=0.500 F1=0.063

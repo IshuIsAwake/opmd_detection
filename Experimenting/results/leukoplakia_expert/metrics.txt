@@ -1,0 +1,15 @@
+# leukoplakia_expert  (obb, 932 test imgs)
+# classes: Leukoplakia
+# IoU match threshold: 0.5
+
+== conf_0.25 ==
+  box     P=0.031 R=0.205 F1=0.054  (TP=23 FP=714 FN=89)
+  loc/hit IoU=0.672 IoP=0.852 IoG=0.779  (n=23)
+  mean best IoU per GT (any conf) = 0.262
+  image   screening_acc=0.499  det_rate_pos=0.957  false_alarm_neg=0.525  (pos=46 neg=886)
+
+== conf_0.001 ==
+  box     P=0.001 R=0.339 F1=0.003  (TP=38 FP=28661 FN=74)
+  loc/hit IoU=0.645 IoP=0.788 IoG=0.815  (n=38)
+  mean best IoU per GT (any conf) = 0.416
+  image   screening_acc=0.049  det_rate_pos=1.000  false_alarm_neg=1.000  (pos=46 neg=886)

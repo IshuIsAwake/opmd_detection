@@ -1,0 +1,15 @@
+# binary_original  (detect, 37 test imgs)
+# classes: lesion
+# IoU match threshold: 0.5
+
+== conf_0.25 ==
+  box     P=0.382 R=0.368 F1=0.375  (TP=21 FP=34 FN=36)
+  loc/hit IoU=0.653 IoP=0.812 IoG=0.801  (n=21)
+  mean best IoU per GT (any conf) = 0.333
+  image   screening_acc=0.838  det_rate_pos=0.838  false_alarm_neg=0.000  (pos=37 neg=0)
+
+== conf_0.001 ==
+  box     P=0.019 R=0.772 F1=0.038  (TP=44 FP=2211 FN=13)
+  loc/hit IoU=0.625 IoP=0.768 IoG=0.814  (n=44)
+  mean best IoU per GT (any conf) = 0.611
+  image   screening_acc=1.000  det_rate_pos=1.000  false_alarm_neg=0.000  (pos=37 neg=0)

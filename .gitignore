@@ -1,0 +1,40 @@
+# Oral_cancer .gitignore
+# Principle: commit SOURCE (originals + code + the markdown findings).
+# Never commit GENERATED output (docs say it is safe to delete and rebuild).
+# NOTE: git .gitignore has NO inline comments — every comment is its own line.
+
+# --- Generated / regenerable: never commit ---
+artifacts/
+runs/
+data/new_data/
+Experimenting/_datasets/
+
+# Ultralytics training/val dumps (plots, args, checkpoints). The findings
+# (metrics.{json,txt}, run.json, metrics_*_negatives.*) sit ABOVE these and
+# are kept on purpose.
+Experimenting/results/*/train/
+Experimenting/results/*/val/
+
+# Ultralytics label cache
+*.cache
+
+# --- Model weights: large and regenerable ---
+# Ignoring these means a fresh clone must RETRAIN before
+# eval_fair_negatives.py / eval_match_rules.py / Number A will run.
+# To ship a specific one anyway: git add -f path/to/best.pt
+*.pt
+
+# --- Python / tooling noise ---
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.DS_Store
+.venv/
+.env
+.claude/settings.local.json
+
+# --- Decide yourself (tracked by default; uncomment a line to exclude) ---
+# data/additional/  : 201M Roboflow third-party; only exp7/convert need it.
+# data/additional/
+# data/Normal/       : 120M patient phone photos; see privacy note before any public push.

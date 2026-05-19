@@ -1,0 +1,157 @@
+{
+  "experiment": "5class_negatives",
+  "task": "detect",
+  "class_names": [
+    "Leukoplakia",
+    "Erythroplakia",
+    "OSMF",
+    "Lichen_Planus",
+    "NH_Ulcers"
+  ],
+  "n_test_images": 74,
+  "iou_match_threshold": 0.5,
+  "metrics": {
+    "conf_0.25": {
+      "conf": 0.25,
+      "overall": {
+        "tp": 13,
+        "fp": 23,
+        "fn": 44,
+        "precision": 0.3611,
+        "recall": 0.2281,
+        "f1": 0.2796
+      },
+      "per_class": {
+        "0": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 8,
+          "precision": 1.0,
+          "recall": 0.1111,
+          "f1": 0.2
+        },
+        "1": {
+          "tp": 3,
+          "fp": 6,
+          "fn": 7,
+          "precision": 0.3333,
+          "recall": 0.3,
+          "f1": 0.3158
+        },
+        "2": {
+          "tp": 3,
+          "fp": 3,
+          "fn": 7,
+          "precision": 0.5,
+          "recall": 0.3,
+          "f1": 0.375
+        },
+        "3": {
+          "tp": 4,
+          "fp": 11,
+          "fn": 10,
+          "precision": 0.2667,
+          "recall": 0.2857,
+          "f1": 0.2759
+        },
+        "4": {
+          "tp": 2,
+          "fp": 3,
+          "fn": 12,
+          "precision": 0.4,
+          "recall": 0.1429,
+          "f1": 0.2105
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.667,
+        "mean_iop": 0.7824,
+        "mean_iog": 0.852,
+        "n": 13
+      },
+      "mean_best_iou_per_gt": 0.181,
+      "image_level": {
+        "screening_accuracy": 0.7838,
+        "detection_rate_on_positives": 0.6216,
+        "false_alarm_rate_on_negatives": 0.0541,
+        "positives": 37,
+        "negatives": 37,
+        "positives_flagged": 23,
+        "negatives_flagged": 2,
+        "total_flagged": 25,
+        "total_images": 74
+      }
+    },
+    "conf_0.001": {
+      "conf": 0.001,
+      "overall": {
+        "tp": 33,
+        "fp": 1298,
+        "fn": 24,
+        "precision": 0.0248,
+        "recall": 0.5789,
+        "f1": 0.0476
+      },
+      "per_class": {
+        "0": {
+          "tp": 4,
+          "fp": 120,
+          "fn": 5,
+          "precision": 0.0323,
+          "recall": 0.4444,
+          "f1": 0.0602
+        },
+        "1": {
+          "tp": 7,
+          "fp": 258,
+          "fn": 3,
+          "precision": 0.0264,
+          "recall": 0.7,
+          "f1": 0.0509
+        },
+        "2": {
+          "tp": 5,
+          "fp": 332,
+          "fn": 5,
+          "precision": 0.0148,
+          "recall": 0.5,
+          "f1": 0.0288
+        },
+        "3": {
+          "tp": 12,
+          "fp": 412,
+          "fn": 2,
+          "precision": 0.0283,
+          "recall": 0.8571,
+          "f1": 0.0548
+        },
+        "4": {
+          "tp": 5,
+          "fp": 176,
+          "fn": 9,
+          "precision": 0.0276,
+          "recall": 0.3571,
+          "f1": 0.0513
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6377,
+        "mean_iop": 0.7644,
+        "mean_iog": 0.828,
+        "n": 33
+      },
+      "mean_best_iou_per_gt": 0.4715,
+      "image_level": {
+        "screening_accuracy": 0.5541,
+        "detection_rate_on_positives": 1.0,
+        "false_alarm_rate_on_negatives": 0.8919,
+        "positives": 37,
+        "negatives": 37,
+        "positives_flagged": 37,
+        "negatives_flagged": 33,
+        "total_flagged": 70,
+        "total_images": 74
+      }
+    }
+  }
+}

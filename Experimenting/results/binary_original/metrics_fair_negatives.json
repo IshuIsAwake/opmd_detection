@@ -1,0 +1,93 @@
+{
+  "experiment": "binary_original  [Number A \u2014 fair (normalised 1:1) negatives]",
+  "task": "single-class lesion / no-lesion",
+  "class_names": [
+    "lesion(any)"
+  ],
+  "n_test_images": 74,
+  "n_positive_images": 37,
+  "n_negative_images": 37,
+  "negative_target_long_side": 276,
+  "weights": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/results/binary_original/train/weights/best.pt",
+  "iou_match_threshold": 0.5,
+  "metrics": {
+    "conf_0.25": {
+      "conf": 0.25,
+      "overall": {
+        "tp": 21,
+        "fp": 70,
+        "fn": 36,
+        "precision": 0.2308,
+        "recall": 0.3684,
+        "f1": 0.2838
+      },
+      "per_class": {
+        "0": {
+          "tp": 21,
+          "fp": 70,
+          "fn": 36,
+          "precision": 0.2308,
+          "recall": 0.3684,
+          "f1": 0.2838
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6526,
+        "mean_iop": 0.8121,
+        "mean_iog": 0.8013,
+        "n": 21
+      },
+      "mean_best_iou_per_gt": 0.3327,
+      "image_level": {
+        "screening_accuracy": 0.6351,
+        "detection_rate_on_positives": 0.8378,
+        "false_alarm_rate_on_negatives": 0.5676,
+        "positives": 37,
+        "negatives": 37,
+        "positives_flagged": 31,
+        "negatives_flagged": 21,
+        "total_flagged": 52,
+        "total_images": 74
+      }
+    },
+    "conf_0.001": {
+      "conf": 0.001,
+      "overall": {
+        "tp": 44,
+        "fp": 5026,
+        "fn": 13,
+        "precision": 0.0087,
+        "recall": 0.7719,
+        "f1": 0.0172
+      },
+      "per_class": {
+        "0": {
+          "tp": 44,
+          "fp": 5026,
+          "fn": 13,
+          "precision": 0.0087,
+          "recall": 0.7719,
+          "f1": 0.0172
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6252,
+        "mean_iop": 0.7678,
+        "mean_iog": 0.8136,
+        "n": 44
+      },
+      "mean_best_iou_per_gt": 0.6106,
+      "image_level": {
+        "screening_accuracy": 0.5,
+        "detection_rate_on_positives": 1.0,
+        "false_alarm_rate_on_negatives": 1.0,
+        "positives": 37,
+        "negatives": 37,
+        "positives_flagged": 37,
+        "negatives_flagged": 37,
+        "total_flagged": 74,
+        "total_images": 74
+      }
+    }
+  }
+}

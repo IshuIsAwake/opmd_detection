@@ -1,0 +1,81 @@
+{
+  "experiment": "osmf_expert",
+  "task": "obb",
+  "class_names": [
+    "OSMF"
+  ],
+  "n_test_images": 932,
+  "iou_match_threshold": 0.5,
+  "metrics": {
+    "conf_0.25": {
+      "conf": 0.25,
+      "overall": {
+        "tp": 11,
+        "fp": 738,
+        "fn": 88,
+        "precision": 0.0147,
+        "recall": 0.1111,
+        "f1": 0.0259
+      },
+      "per_class": {
+        "0": {
+          "tp": 11,
+          "fp": 738,
+          "fn": 88,
+          "precision": 0.0147,
+          "recall": 0.1111,
+          "f1": 0.0259
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6416,
+        "mean_iop": 0.7759,
+        "mean_iog": 0.799,
+        "n": 11
+      },
+      "mean_best_iou_per_gt": 0.1883,
+      "image_level": {
+        "screening_accuracy": 0.4807,
+        "detection_rate_on_positives": 0.7115,
+        "false_alarm_rate_on_negatives": 0.533,
+        "positives": 52,
+        "negatives": 880
+      }
+    },
+    "conf_0.001": {
+      "conf": 0.001,
+      "overall": {
+        "tp": 35,
+        "fp": 27719,
+        "fn": 64,
+        "precision": 0.0013,
+        "recall": 0.3535,
+        "f1": 0.0025
+      },
+      "per_class": {
+        "0": {
+          "tp": 35,
+          "fp": 27719,
+          "fn": 64,
+          "precision": 0.0013,
+          "recall": 0.3535,
+          "f1": 0.0025
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6092,
+        "mean_iop": 0.7428,
+        "mean_iog": 0.8096,
+        "n": 35
+      },
+      "mean_best_iou_per_gt": 0.4451,
+      "image_level": {
+        "screening_accuracy": 0.0558,
+        "detection_rate_on_positives": 1.0,
+        "false_alarm_rate_on_negatives": 1.0,
+        "positives": 52,
+        "negatives": 880
+      }
+    }
+  }
+}

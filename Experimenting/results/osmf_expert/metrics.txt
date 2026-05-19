@@ -1,0 +1,15 @@
+# osmf_expert  (obb, 932 test imgs)
+# classes: OSMF
+# IoU match threshold: 0.5
+
+== conf_0.25 ==
+  box     P=0.015 R=0.111 F1=0.026  (TP=11 FP=738 FN=88)
+  loc/hit IoU=0.642 IoP=0.776 IoG=0.799  (n=11)
+  mean best IoU per GT (any conf) = 0.188
+  image   screening_acc=0.481  det_rate_pos=0.712  false_alarm_neg=0.533  (pos=52 neg=880)
+
+== conf_0.001 ==
+  box     P=0.001 R=0.353 F1=0.003  (TP=35 FP=27719 FN=64)
+  loc/hit IoU=0.609 IoP=0.743 IoG=0.810  (n=35)
+  mean best IoU per GT (any conf) = 0.445
+  image   screening_acc=0.056  det_rate_pos=1.000  false_alarm_neg=1.000  (pos=52 neg=880)

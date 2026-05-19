@@ -1,0 +1,15 @@
+{
+  "experiment": "leukoplakia_expert",
+  "task": "obb",
+  "model_weights": "yolov8n-obb.pt",
+  "class_names": [
+    "Leukoplakia"
+  ],
+  "data_yaml": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/_datasets/leukoplakia_expert/data.yaml",
+  "epochs": 100,
+  "imgsz": 640,
+  "batch": 8,
+  "amp": false,
+  "seed": 42,
+  "device": "0"
+}
