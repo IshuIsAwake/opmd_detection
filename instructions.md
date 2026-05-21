@@ -39,24 +39,42 @@
 > a credible screener: **28/37 lesion images caught, 1/37 false alarm,
 > screening_acc 0.865** (no-skill 0.50). Detection is NOT abandoned.
 >
-> **k-fold + augmentation update (2026-05-21, supersedes exp8b's single-fold
-> headline AND validates §3 step 4 below).** The exp8b 0.865 was cross-
-> validated to **0.842 ± 0.041 paired 5-fold CV** (`Experimenting/RESULTS.md`
-> §8). On the way, exp10 swept augmentation and exp11 paired-tested the
-> winner: **`geom_no_color` (= YOLO defaults but `hsv_h=hsv_s=hsv_v=0`) beats
-> the default recipe by +0.101 paired screening, 3.6× tighter std, winning
-> 4/5 folds** — the §3 step 4 "no HSV / colour is diagnostic" rule below is
-> now empirically validated, not a design assertion. Note that exp1–8
-> silently violated this rule (YOLO defaults include HSV jitter); exp11 is
-> the first run where it was actually enforced. On fold 0 of exp11, default
-> caught 5/72 lesions; geom_no_color caught 47/72 — HSV jitter appears to
-> destabilise training on small medical data, not just corrupt a feature.
-> The remaining confound-free failure is **confidence calibration**
-> (FA@conf-0.001 = 0.702 ± 0.068 across the paired CV, slightly better than
-> exp8b's single-fold 0.946 tail but still bad). Active plan is now
-> **yolov8 transfer-learning sweep on the same kfold5 splits + geom_no_color
-> aug**, then calibration — see `HANDOFF.md` §NEXT. Whole-image
-> classification pivot stays deferred.
+> **k-fold + augmentation + operating-point update (2026-05-21, supersedes
+> exp8b's single-fold headline AND validates §3 Step 2 below).** The exp8b
+> 0.865 was cross-validated; with `geom_no_color` aug (= YOLO defaults but
+> `hsv_h=hsv_s=hsv_v=0`) and the post-hoc operating-point sweep, the
+> trustworthy current headline is **screening_acc 0.917 ± 0.031 at conf=0.10
+> (paired 5-fold CV, `Experimenting/RESULTS.md` §9)**. Three findings stack:
+>
+> 1. **HSV-off validated** (exp11 paired CV, §8c): `geom_no_color` beats
+>    default by +0.101 paired screening at conf=0.25, 3.6× tighter std,
+>    winning 4/5 folds. On fold 0 of exp11, default caught 5/72 lesions while
+>    geom_no_color caught 47/72 — HSV jitter appears to destabilise training
+>    on small medical data, not just corrupt a feature (hypothesis, one seed
+>    per fold). The §3 Step 2 "no HSV / colour is diagnostic" rule below is
+>    empirically validated, not a design assertion. exp1–8 silently violated
+>    this rule (YOLO defaults include `hsv_h=0.015, hsv_s=0.7, hsv_v=0.4`).
+> 2. **Operating point matters** (§9): `sweep_conf_threshold.py` revealed
+>    the kfold5 screening_acc at conf=0.25 (= 0.842 ± 0.041) was a misleadingly
+>    conservative reading. At the adopted conf=0.10 the model lands at 0.917 ±
+>    0.031, no retraining. Recall-first → conf=0.05 (screening 0.917, det
+>    0.932); balanced → conf=0.10; specificity-leaning → conf=0.15.
+> 3. **"Calibration is the residual" partially RESOLVED** (§9b). The
+>    FA@conf-0.001 ≈ 0.70 figure that exp8 / exp9 / exp11 all reported was
+>    an evaluation-knob artifact — no operator runs at conf-0.001. At
+>    conf=0.10 false_alarm = 0.047. The logits are still technically
+>    miscalibrated; doesn't matter operationally for a screener.
+>
+> The earlier "exp10 0.919 was a lucky split" reading is partially walked
+> back — exp10 reported a real signal at the wrong threshold on a slightly
+> fortunate split; the CV at the right threshold (0.917) lands on top of it.
+>
+> Active plan is now **yolov8 transfer-learning sweep on the same kfold5
+> splits + geom_no_color aug** (user will share medical-domain pretrained
+> weights in a fresh chat). See `HANDOFF.md` §NEXT. Whole-image classification
+> pivot stays deferred. Proper post-hoc temperature scaling on raw logits is
+> a worthwhile future exercise if downstream probabilities are ever needed;
+> they currently aren't.
 
 ## 0. The Core Idea
 

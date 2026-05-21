@@ -1,0 +1,22 @@
+# Conf-threshold sweep: kfold5_geom_no_color_binary
+# Folds swept: fold_0, fold_1, fold_2, fold_3, fold_4  (5 folds)
+
+# Aggregate (mean ± std across folds, image-level metrics)
+   thresh        screen_acc          det_rate         false_alm
+    0.050    0.917 ± 0.019    0.932 ± 0.060    0.097 ± 0.068
+    0.100    0.917 ± 0.031    0.882 ± 0.078    0.047 ± 0.045  ⭐ BEST by screening
+    0.150    0.899 ± 0.021    0.838 ± 0.060    0.039 ± 0.034
+    0.200    0.869 ± 0.028    0.769 ± 0.076    0.031 ± 0.038
+    0.250    0.842 ± 0.041    0.703 ± 0.099    0.020 ± 0.027  <- current default
+    0.300    0.808 ± 0.056    0.631 ± 0.125    0.014 ± 0.020
+    0.350    0.782 ± 0.077    0.573 ± 0.160    0.008 ± 0.019
+    0.400    0.740 ± 0.103    0.485 ± 0.210    0.006 ± 0.012
+    0.500    0.666 ± 0.094    0.333 ± 0.187    0.000 ± 0.000
+    0.650    0.560 ± 0.049    0.120 ± 0.098    0.000 ± 0.000
+    0.800    0.517 ± 0.015    0.033 ± 0.029    0.000 ± 0.000
+
+# Headline
+  conf=0.250 (current): screening 0.842 ± 0.041  det 0.703  false 0.020
+  conf=0.100 (best): screening 0.917 ± 0.031  det 0.882  false 0.047
+  Δ vs current 0.25: +0.076 screening_acc
+

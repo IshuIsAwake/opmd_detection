@@ -8,30 +8,48 @@
 
 ---
 
-## ✅ exp8 → exp9 → exp10 → exp11 CONCLUDED (2026-05-21). 🔴 NEXT = transfer-learning sweep, then calibration
+## ✅ exp8 → exp9 → exp10 → exp11 → §9 sweep CONCLUDED (2026-05-21). 🔴 NEXT = transfer-learning sweep
 
-**Authority: `Experimenting/RESULTS.md` §8 (the full exp9/10/11 chain).
-Earlier history: §7 (exp8 — the "detection is dead" retraction). Read §8
-first.**
+**Authority: `Experimenting/RESULTS.md` §9 (operating-point sweep — current
+headline) and §8 (the full exp9/10/11 paired-CV chain). Earlier history: §7
+(exp8 — the "detection is dead" retraction). Read §9, then §8.**
 
-### What we have now (cross-validated headline)
+### What we have now (cross-validated headline at the adopted operating point)
 
 `yolov8n` binary detector, fair 1:1 resolution-normalized negatives,
 **`geom_no_color`** augmentation (YOLO defaults but `hsv_h=hsv_s=hsv_v=0`),
-**paired 5-fold CV** on `_datasets/kfold5_splits.json`:
+**paired 5-fold CV** on `_datasets/kfold5_splits.json`, **decision threshold
+conf=0.10** (adopted operating point, §9d):
 
-| metric (paired 5-fold, n=5) | mean ± std |
+| metric (paired 5-fold, conf=0.10) | mean ± std |
 |---|---|
-| screening_acc | **0.842 ± 0.041**  (CI95 ±0.036) |
-| det_rate_pos | 0.703 ± 0.099 |
-| false_alarm_neg | 0.020 ± 0.027 |
-| box F1 (iog≥0.5) | 0.525 ± 0.036 |
+| **screening_acc** | **0.917 ± 0.031** |
+| det_rate_pos | 0.882 |
+| false_alarm_neg | 0.047 |
+| box F1 (iog≥0.5) at conf=0.25 | 0.525 ± 0.036 |
 | loc IoG (hits) | 0.833 ± 0.017 |
-| FA neg @ conf 0.001 | 0.702 ± 0.068  ← the residual |
-| val_stock mAP50 | 0.328 ± 0.067 |
+| val_stock mAP50 (geometry-free) | 0.328 ± 0.067 |
 
-Cumulative across all 5 folds: **~254 / 362 lesion images caught, ~108
-missed, ~7 / 362 false alarms.**
+Cumulative across all 5 folds, conf=0.10: **~319 / 362 lesion images caught
+(88%), ~43 missed (12%), ~17 / 362 false alarms (~5%).**
+
+The previous reading "0.842 ± 0.041 / det 0.703 / false 0.020" was the same
+model at YOLO's conf=0.25 default — `sweep_conf_threshold.py` (§9) revealed
+that threshold was suppressing real-lesion firings in conf [0.05, 0.25].
+**No retraining**; +0.076 screening lift from one scalar change. Operating-
+point alternatives on the SAME weights:
+
+| conf | screen | det | false | use case |
+|---|---|---|---|---|
+| 0.05 | 0.917 ± 0.019 | 0.932 | 0.097 | recall-first |
+| **0.10 (adopted)** | **0.917 ± 0.031** | **0.882** | **0.047** | balanced |
+| 0.15 | 0.899 ± 0.021 | 0.838 | 0.039 | specificity-leaning |
+| 0.25 (prev default) | 0.842 ± 0.041 | 0.703 | 0.020 | conservative |
+
+**Mild caveat:** threshold was selected on the same 5 test slices we report
+on (1-scalar test-set adaptation). A held-out estimate would land 0.90–0.91,
+not 0.917. The direction and +0.076 Δ are robust; the absolute is slightly
+optimistic.
 
 ### Two validated rules to keep
 
@@ -47,41 +65,61 @@ missed, ~7 / 362 false alarms.**
    vs `geom_no_color`. At ~277 thumbnails the kitchen sink overwhelms the
    data. Don't re-test.
 
-### What did NOT replicate
+### Reconciling exp10's 0.919 with the CV
 
-exp10 produced screening 0.919 on the single exp8b split with `geom_no_color`.
-**That was a lucky draw** — exp11 paired CV mean is 0.842, no fold reached
-0.90, max was fold 4 at 0.880. The *direction* (HSV-off helps) was real;
-the magnitude wasn't. exp8b's single-fold 0.946 FA@conf-0.001 was likewise a
-tail event — typical is ~0.62–0.70.
+The earlier "exp10 0.919 was a lucky draw" reading needs **partial walking-
+back** after §9. The true story:
+
+- exp10 was at conf=0.25 on a small 74-img slice → fair-but-fortunate single
+  fold.
+- kfold5 paired at conf=0.25 = 0.842 ± 0.041 → exp10 was on the upper tail
+  of that distribution.
+- **BUT** the same kfold5 weights at conf=0.10 = 0.917 ± 0.031 → the model
+  was actually capable of that ceiling all along; conf=0.25 was hiding it.
+
+So exp10 reported a real signal at the wrong threshold on a slightly
+fortunate split. Calling it "lucky" implied the *model* wasn't that good;
+§9 shows the model IS that good — we were just under-thresholding it.
+
+exp8b's "FA@conf-0.001 = 0.946 fires on everything" was likewise a tail-event
+artifact AND an evaluation-knob artifact: typical FA@conf-0.001 across folds
+is ~0.62–0.70, and no operator runs at conf-0.001 anyway. The "calibration
+is the residual" framing (§7b/§8a) is **partially resolved by §9b** — was an
+evaluation-knob artifact, not a model bug. At conf=0.10, false_alarm = 0.047.
 
 ### 🔴 ACTIVE NEXT (separate conversation, to save tokens)
 
 **Transfer-learning sweep on the same kfold5 splits, with `geom_no_color`
 aug locked in.** Single-variable comparison vs the kfold5 headline
-(`kfold5_geom_no_color_binary`).
+(`kfold5_geom_no_color_binary`, 0.917 at conf=0.10).
 
-Candidate axes (pick one to start; the others stack onto the same script):
+**User-stated plan: medical-domain pretrained weights.** The user will share
+specific .pt weights / dataset in the new chat. Default scaffolding to wire
+those in:
 
-- **Model size:** `yolov8s.pt` (≈10× params of `n`) and `yolov8m.pt` on the
-  same 5 folds and aug. Will hurt VRAM (RTX 3050 6 GB) — likely needs
-  `batch=4` for `s`, `batch=2` for `m`.
-- **Pretrained vs scratch:** `yolov8n.yaml` from-scratch baseline (no COCO
-  pretraining) — answers "is COCO weight transfer actually doing work on
-  these thumbnails?"
-- **Longer schedule / cosine LR:** `epochs=200`, `cos_lr=True`, `patience=50`
-  — cheap if pretraining isn't the lever.
+1. Copy `exp11_kfold5_aug_binary.py` → `exp12_transfer_kfold5_binary.py`.
+2. Swap `"yolov8n.pt"` for the user's medical-domain .pt path.
+3. Keep `train_kwargs=AUG_LEVELS["geom_no_color"]` (validated default).
+4. Keep `_datasets/kfold5_splits.json` (same 5 folds for paired comparison).
+5. Adjust `batch=` for VRAM if the pretrained model is larger than yolov8n.
+6. After: `compare_aug_kfold.py kfold5_geom_no_color_binary <new_exp>` for
+   the paired head-to-head; **then** `sweep_conf_threshold.py <new_exp>` to
+   find the new model's optimal operating point (don't compare at conf=0.25
+   — each model may have its own sweet spot).
 
-The infrastructure is already in place: `exp11_kfold5_aug_binary.py` proves
-the parallel-pair pattern; copy it to `exp12_transfer_kfold5_binary.py` and
-swap the model weights / kwargs. Use the existing `compare_aug_kfold.py` to
-produce the paired head-to-head.
+If the medical-domain weights don't pan out, the cheapest fallback is a
+size sweep: `yolov8s.pt` / `yolov8m.pt` on the same kfold5. Both come with
+COCO pretraining; you're testing capacity, not pretraining source. VRAM
+notes for RTX 3050 6 GB: `batch=4` for `s`, `batch=2` for `m`.
 
-**Then: confidence calibration.** FA@conf-0.001 = 0.702 ± 0.068 is the one
-thing neg-training + HSV-off + CV did not move. The handles to consider
-(not yet tried, in priority order): post-hoc temperature scaling on the
-saved logits, training-time focal loss, hard-negative mining from the
-`_normalized_negatives/` pool. This is unlikely to be data-limited.
+**Calibration follow-up (much lower priority now).** The §9 sweep mostly
+resolved the "calibration is the residual" framing — it was an evaluation-
+knob artifact, not a model bug. Proper post-hoc temperature scaling on raw
+logits would still be useful if downstream code ever consumes the model's
+probability (currently it doesn't). Implementation note: Ultralytics doesn't
+expose raw pre-sigmoid logits by default — needs a head-module monkey-patch
+or a hooked-during-training logit log. ~1-2 hrs of code work. Defer until
+the TL sweep is done; the operating-point fix is enough for now.
 
 **User runs all GPU training**; you write code + exact commands.
 

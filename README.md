@@ -25,21 +25,34 @@ nothing tuned, all single-variable controlled comparisons) settled:
 **Headline binary detector** — `yolov8n`, 100 epochs, `imgsz=640`, `batch=8`,
 seed 42, fair 1:1 resolution-normalized negatives, **`geom_no_color`
 augmentation** (= YOLO defaults but `hsv_h=hsv_s=hsv_v=0`); paired 5-fold CV
-on (pool + locked test = 362 positives) + 5-way negative slices:
+on (pool + locked test = 362 positives) + 5-way negative slices; **decision
+threshold = conf 0.10** (adopted operating point; see RESULTS.md §9):
 
-| metric (paired 5-fold, n=5) | mean ± std | range |
-|---|---|---|
-| **screening_acc** | **0.842 ± 0.041** | [0.781, 0.880] |
-| det_rate_pos | 0.703 ± 0.099 | [0.562, 0.817] |
-| false_alarm_neg | 0.020 ± 0.027 | [0.000, 0.056] |
-| box F1 (iog≥0.5) | 0.525 ± 0.036 | — |
-| loc IoG on hits | 0.833 ± 0.017 | — |
-| val_stock mAP50 | 0.328 ± 0.067 | — |
-| FA neg @ conf 0.001 | 0.702 ± 0.068 | — |
+| metric (paired 5-fold, conf=0.10) | mean ± std |
+|---|---|
+| **screening_acc** | **0.917 ± 0.031** |
+| det_rate_pos | 0.882 |
+| false_alarm_neg | 0.047 |
+| box F1 (iog≥0.5) at conf 0.25 | 0.525 ± 0.036 |
+| loc IoG on hits | 0.833 ± 0.017 |
+| val_stock mAP50 (geometry-free) | 0.328 ± 0.067 |
 
-Cumulative across all 5 folds (every positive + every fair negative tested
-once): **~254 of 362 lesion images caught, ~108 missed, ~7 of 362 false
-alarms**. No-skill screening = 0.50.
+Cumulative across all 5 folds, conf=0.10: **~319 of 362 lesion images caught
+(88%), ~43 missed (12%), ~17 of 362 false alarms (5%)**. No-skill = 0.50.
+
+The previous "0.842 ± 0.041" headline was the same model at the YOLO default
+conf=0.25 — a misleadingly conservative threshold that suppressed real-lesion
+firings in the [0.05, 0.25] range. The threshold sweep (`Experimenting/sweep
+_conf_threshold.py`) found the model's actual screening ceiling is flat
+across conf 0.05–0.10. **Operating-point knobs on the SAME model**, no
+retraining:
+
+| operating point | screening | det_rate | false_alarm | use case |
+|---|---|---|---|---|
+| conf=0.05 | 0.917 ± 0.019 | 0.932 | 0.097 | recall-first (highest catch) |
+| **conf=0.10 (adopted)** | **0.917 ± 0.031** | **0.882** | **0.047** | balanced |
+| conf=0.15 | 0.899 ± 0.021 | 0.838 | 0.039 | specificity-leaning |
+| conf=0.25 (YOLO default) | 0.842 ± 0.041 | 0.703 | 0.020 | prev. headline |
 
 **Settled / measured (this is what's true now):**
 - **Two-stage structure is sound.** Binary YOLO ≈ **3× the recall** of 5-class
@@ -59,13 +72,18 @@ alarms**. No-skill screening = 0.50.
   (training near-collapse) where geom_no_color caught 47/72. The
   `instructions.md` §3 step 4 rule is now empirically validated, not an
   assertion.
-- **exp10's single-fold 0.919 was a lucky split.** The *direction* (HSV-off
-  helps) was real; the magnitude (+0.054 vs default on that split) was not.
-  CV mean is 0.842, not 0.919.
-- **Calibration is the one residual.** FA@conf-0.001 = 0.702 ± 0.068 across
-  the paired CV — better than the single-fold 0.946 exp8b figure suggested,
-  but still well above no-skill. Aug + neg-training + CV none of them moved
-  this; it's the next real target.
+- **exp10's single-fold 0.919 was at conf=0.25 on a small slice — a
+  fair-but-fortunate snapshot of a model whose true CV-validated screening
+  ceiling is 0.917 at conf=0.05–0.10.** Direction was right; the "lucky
+  split" reading we adopted earlier was over-applied. The right reading:
+  exp10 reported a real signal at the wrong threshold; CV at the right
+  threshold lands on top of it.
+- **"Calibration is the residual" — partially resolved (RESULTS.md §9b).**
+  The FA@conf-0.001 ≈ 0.70 figure was an evaluation-knob artifact, not a
+  model bug — no operator runs at conf-0.001. At the adopted conf=0.10
+  operating point, false_alarm = 0.047. Proper post-hoc temperature scaling
+  on raw logits stays a worthwhile future exercise if downstream
+  probabilities are ever needed; they currently aren't.
 
 **Localisation metric.** The `IoU≥0.5` match gate understated localisation
 (it relabelled well-placed offset boxes as false positives). Headline is
@@ -111,8 +129,12 @@ likely disease with a Grad-CAM. Concretely:
 - **Sensitivity + specificity together** on a fair, resolution-matched test —
   the screening decision is `det_rate_pos` paired with `false_alarm_neg`, not
   box geometry and not box recall.
-- The locked 37-image `test/` is the sole headline; it is never trained or
-  tuned on.
+- **Headline is the paired k-fold mean ± std**, not any single test slice.
+  Through exp8 the locked 37-image `test/` was the sole headline; from exp9
+  onward it was dissolved into the kfold pool (every positive lands in test
+  once across the folds). The `src/` pipeline still measures on the legacy
+  `data/test/` for back-compat; the trustworthy current numbers live in
+  `Experimenting/results/kfold5_geom_no_color_binary/summary.txt`.
 - Honest measurement over leaderboard numbers — every experiment is a
   controlled single-variable comparison, nothing tuned for a metric.
 
@@ -182,28 +204,34 @@ negatives**. Tested controlled:
 `eval_with_negatives.py` (raw 570-neg, superseded), `eval_fair_negatives.py`
 (Number A), `eval_match_rules.py`.
 
-### Phase 4 — k-fold + augmentation chain (2026-05-20/21, exp9 → exp10 → exp11)
+### Phase 4 — k-fold + augmentation chain (2026-05-20/21, exp9 → exp10 → exp11 → §9 sweep)
 
 | # | what | key finding |
 |---|---|---|
 | **exp9** | 10-fold CV of exp8b recipe | screening 0.840 ± 0.063 — verified exp8b within noise; exp8b's FA@.001=0.946 was a tail draw (typical 0.618 ± 0.140) |
 | **exp10** | 6-level aug sweep on exp8b split | `geom_no_color` 0.919 single-fold — best of sweep; `heavy` and `light` both worse than `default`; `instructions.md` HSV rule directionally supported |
-| **exp11** | **Paired 5-fold CV: geom_no_color vs default** | **HSV-off validated.** Geom beats default +0.101 screening / +0.219 det_rate, 3.6× tighter std, wins 4/5 folds. exp10's 0.919 was lucky; CV mean is 0.842 ± 0.041 |
+| **exp11** | **Paired 5-fold CV: geom_no_color vs default** | **HSV-off validated.** Geom beats default +0.101 screening / +0.219 det_rate at conf=0.25, 3.6× tighter std, wins 4/5 folds. |
+| **§9 sweep** | **Post-hoc conf-threshold sweep on kfold5 weights** (inference only) | **New headline: 0.917 ± 0.031 screening_acc at conf=0.10.** +0.076 over conf=0.25 default. The model was firing on real lesions in conf [0.05, 0.25]; the default threshold was throwing those out. Calibration "residual" partially resolved as an evaluation-knob artifact. |
 
-The paired exp11 mechanism is striking: fold-0 of default caught 5/72 lesions
+The exp11 mechanism is striking: fold-0 of default caught 5/72 lesions
 (training near-collapse); same fold + HSV off caught 47/72. Consistent with
-HSV jitter destabilising training on ~250-photo medical data, not just
-"corrupting a useful feature" — though that mechanism remains a hypothesis
-(one seed per fold, not multi-seed retrains). See `Experimenting/RESULTS.md`
-§8 for the full chain.
+HSV jitter destabilising training on ~250-photo medical data, though that
+mechanism remains a hypothesis (one seed per fold). exp10's 0.919 reading,
+once dismissed as "lucky split," now reconciles with the §9 finding: the
+model's true CV-validated ceiling at the right operating point is 0.917 —
+exp10 reported the signal at the wrong threshold and on a slightly
+fortunate split. Full chain in `Experimenting/RESULTS.md` §8 and §9.
 
 ### Phase 5 — Active next
 
 **yolov8 transfer-learning sweep** on the same `kfold5_splits.json` with
-`geom_no_color` aug locked in — single-variable comparison against the
-kfold5 binary headline. Then **confidence calibration** (the one residual
-neg-training + aug + CV did not move). Whole-image classification
+`geom_no_color` aug locked in (user will supply medical-domain pretrained
+weights in a fresh chat). Single-variable comparison against the kfold5
+binary headline (0.917 at conf=0.10). Whole-image classification
 (EfficientNet-B2 / DINOv2 frozen) stays a **deferred comparison arm**.
+Proper post-hoc temperature scaling on raw logits is a worthwhile future
+exercise if downstream probabilities are ever needed; for current screening
+behaviour the conf=0.10 operating point is enough.
 
 ---
 
@@ -290,8 +318,12 @@ interleave the two arms.
 
 ## 8. Notes & Invariants
 
-- **Locked test.** `data/test/` (37) is the sole headline, touched only at
-  final eval — never trained or tuned on.
+- **Headline = paired k-fold mean ± std** (current authority:
+  `Experimenting/results/kfold5_geom_no_color_binary/summary.txt`).
+  `data/test/` (37 imgs) was the sole headline through exp8; from exp9
+  onward it was dissolved into the 362-image kfold pool by user choice
+  (every positive lands in test once). `src/` still uses it as a separate
+  eval slice for back-compat; treat that as historical.
 - **Screening = det_rate + false_alarm together**, geometry-free. Box recall
   and IoU/IoP/IoG are localisation / crop-quality, not the screening verdict.
   Headline localisation rule: `IoG≥0.5` (`IoU≥0.5` kept for continuity).

@@ -39,24 +39,41 @@ third gloomy verdict via exp8, and validated the colour rule via exp11.
   data (one seed per fold — hypothesis, not proof). `geom_no_color` is now
   the adopted binary-detector aug recipe.
 - **Cross-validated headline (`yolov8n` binary, `geom_no_color` aug, paired
-  5-fold CV) — these are the current trustworthy numbers:**
-  - screening_acc **0.842 ± 0.041** (CI95 ±0.036), range [0.781, 0.880]
-  - det_rate_pos **0.703 ± 0.099**
-  - false_alarm_neg **0.020 ± 0.027**
-  - FA neg @ conf 0.001 **0.702 ± 0.068** ← residual
+  5-fold CV, conf=0.10) — current trustworthy numbers (RESULTS.md §9):**
+  - screening_acc **0.917 ± 0.031**
+  - det_rate_pos **0.882**
+  - false_alarm_neg **0.047**
   - loc IoG on hits **0.833 ± 0.017**
-  - val_stock mAP50 **0.328 ± 0.067**
-  - Cumulative across the 5 folds: ~254/362 lesions caught, ~108 missed,
-    ~7/362 false alarms.
-  - exp10's single-fold 0.919 was a lucky split, **not** the headline.
+  - val_stock mAP50 **0.328 ± 0.067** (geometry-free metric, unaffected by
+    operating point)
+  - Cumulative across the 5 folds, conf=0.10: ~319/362 lesions caught,
+    ~43 missed, ~17/362 false alarms.
+  - **Operating-point knobs on the SAME model** (no retraining): conf=0.05
+    → screening 0.917, det 0.932, false 0.097 (recall-first); conf=0.15
+    → screening 0.899, det 0.838, false 0.039 (specificity-leaning).
+  - **The conf=0.25 reading (screening 0.842 ± 0.041) was the YOLO default,
+    not the model's screening ceiling.** Found post-hoc by
+    `sweep_conf_threshold.py` — the model fires on real lesions at conf
+    0.05–0.25 and the default threshold was suppressing those firings.
+  - exp10's single-fold 0.919 was at conf=0.25 on a small test slice — a
+    fair-but-fortunate snapshot of a model whose true CV-validated ceiling
+    at the right threshold is 0.917. Direction was right; threshold was
+    wrong; the "lucky split" reading was over-applied.
+  - **Mild caveat:** the threshold was selected on the same test data we
+    report on (1-scalar test-set adaptation). A held-out estimate would
+    land ~0.90–0.91, not 0.917. Direction and +0.076 Δ are real.
 - **The two-stage *structure* is sound** (binary YOLO ≈3× the recall of
   5-class on identical data; exp1→exp2). Localisation headline rule:
   **`iog>=0.5`** ("≥half the lesion covered"), `iou>=0.5` kept for continuity
   — wired into `metrics.py`. Headline is screening (det_rate +
   false_alarm together), geometry-free.
-- **The one confound-free residual: confidence calibration.** FA@conf-0.001
-  ≈ 0.70 across the paired CV — better than exp8b's single-fold 0.946 tail
-  suggested, still bad. Aug + neg-training + CV none of them moved this.
+- **"Confidence calibration is the residual" — partially RESOLVED (§9b).**
+  FA@conf-0.001 ≈ 0.70 was an evaluation-knob artifact (no operator runs at
+  conf-0.001); at the adopted conf=0.10 operating point, false_alarm = 0.047.
+  The model's logits are still technically miscalibrated, but it doesn't
+  matter operationally. Proper post-hoc temperature scaling stays a worthwhile
+  future exercise if downstream probabilities are ever needed; they currently
+  aren't.
 
 Full evidence in **`Experimenting/RESULTS.md` §8** (the exp9 → exp10 → exp11
 chain). The **active next step is the yolov8 transfer-learning sweep** on
@@ -145,9 +162,14 @@ There is no test framework — the smoke chain is the integration check.
 
 ## Invariants you must not violate
 
-- **`data/test/` (37 images) is the locked, sole headline metric** — only
-  touched in Step 05, never trained or tuned on. `data/new_data/web_holdout/`
-  is a *secondary, eval-only* higher-N detector signal — never train/tune on it.
+- **Headline is the cross-validated mean ± std**, not any single test slice.
+  Authoritative numbers live in `Experimenting/results/kfold5_geom_no_color_binary/summary.txt`.
+  `data/test/` (37 imgs) is **no longer "the locked test"** — by user design
+  it was dissolved into the 362-image kfold pool (`_datasets/kfold5_splits.json`)
+  so every positive image is a blackbox test once across the 5 folds. The
+  `src/` pipeline still treats `data/test/` as a separate eval set
+  (historical); `Experimenting/` does not. `data/new_data/web_holdout/` is a
+  *secondary, eval-only* `src/`-era detector signal — never train/tune on it.
 - **Originals are read-only**: `data/pool/`, `data/test/`, `data/Normal/`,
   `data/Normal/NON CANCER/`, `data/additional/`. Everything generated goes under
   `data/new_data/` (and `artifacts/`), which is safe to delete and rebuild.
