@@ -1,0 +1,148 @@
+# kfold5_geom_no_color_binary  (5 folds: fold_0, fold_1, fold_2, fold_3, fold_4)
+
+# 1. AVERAGES ACROSS FOLDS  (mean ± std,  [min, max],  CI95 half)
+  metric                  n     mean    ± std      min      max    CI95±
+  screening_acc           5    0.842    0.041    0.781    0.880    0.036
+  det_rate_pos            5    0.703    0.099    0.562    0.817    0.087
+  false_alarm_neg         5    0.020    0.027    0.000    0.056    0.024
+  box P (iou>=0.5)        5    0.435    0.072    0.346    0.521    0.064
+  box R (iou>=0.5)        5    0.342    0.053    0.278    0.394    0.047
+  box F1 (iou>=0.5)       5    0.379    0.041    0.318    0.420    0.036
+  box P (iog>=0.5)        5    0.600    0.052    0.561    0.690    0.046
+  box R (iog>=0.5)        5    0.476    0.079    0.368    0.577    0.069
+  box F1 (iog>=0.5)       5    0.525    0.036    0.480    0.569    0.032
+  loc IoU (hits)          5    0.664    0.017    0.635    0.674    0.014
+  loc IoG (hits)          5    0.833    0.017    0.815    0.858    0.015
+  FA neg @ conf 0.001     5    0.702    0.068    0.589    0.761    0.060
+  val_stock mAP50         5    0.328    0.067    0.240    0.409    0.059
+
+# 2. PER FOLD
+   fold  screen_acc   det_rate  false_alm      P_iou      R_iou     F1_iou      P_iog      R_iog     F1_iog      mAP50    FA@.001
+      0      0.824      0.649      0.000      0.482      0.357      0.410      0.590      0.438      0.503      0.376      0.703
+      1      0.781      0.562      0.000      0.521      0.278      0.363      0.690      0.368      0.480      0.292      0.589
+      2      0.875      0.750      0.000      0.451      0.394      0.420      0.593      0.519      0.554      0.409      0.750
+      3      0.847      0.736      0.042      0.346      0.294      0.318      0.564      0.479      0.518      0.240      0.708
+      4      0.880      0.817      0.056      0.377      0.387      0.382      0.561      0.577      0.569      0.322      0.761
+
+# 3. BEST FOLD  (ranked by screening_acc @ conf 0.25)
+  fold_4  →  screening_acc = 0.8803
+    screening_acc          0.8803
+    det_rate_pos           0.8169
+    false_alarm_neg        0.0563
+    box P (iou>=0.5)       0.3772
+    box R (iou>=0.5)       0.3874
+    box F1 (iou>=0.5)      0.3822
+    box P (iog>=0.5)       0.5614
+    box R (iog>=0.5)       0.5766
+    box F1 (iog>=0.5)      0.5689
+    loc IoU (hits)         0.6695
+    loc IoG (hits)         0.8575
+    FA neg @ conf 0.001    0.7606
+    val_stock mAP50        0.3222
+
+# 4. ALL AGGREGATES  (full flat key list, alphabetical)
+  metrics.conf_0.001.conf                                        0.0010 ± 0.0000
+  metrics.conf_0.001.image_level.detection_rate_on_positives     0.9973 ± 0.0061
+  metrics.conf_0.001.image_level.negatives                       72.4000 ± 1.1402
+  metrics.conf_0.001.image_level.negatives_flagged               50.8000 ± 4.5497
+  metrics.conf_0.001.image_level.positives                       72.4000 ± 1.1402
+  metrics.conf_0.001.image_level.positives_flagged               72.2000 ± 1.0954
+  metrics.conf_0.001.image_level.screening_accuracy              0.6475 ± 0.0312
+  metrics.conf_0.001.image_level.total_flagged                   123.0000 ± 4.6368
+  metrics.conf_0.001.image_level.total_images                    144.8000 ± 2.2804
+  metrics.conf_0.001.localisation_on_hits.mean_iog               0.8124 ± 0.0177
+  metrics.conf_0.001.localisation_on_hits.mean_iop               0.7640 ± 0.0148
+  metrics.conf_0.001.localisation_on_hits.mean_iou               0.6302 ± 0.0108
+  metrics.conf_0.001.localisation_on_hits.n                      90.4000 ± 5.5498
+  metrics.conf_0.001.mean_best_iou_per_gt                        0.6155 ± 0.0288
+  metrics.conf_0.001.overall.f1                                  0.0479 ± 0.0135
+  metrics.conf_0.001.overall.fn                                  25.4000 ± 7.9561
+  metrics.conf_0.001.overall.fp                                  3859.6000 ± 1349.2455
+  metrics.conf_0.001.overall.precision                           0.0248 ± 0.0072
+  metrics.conf_0.001.overall.recall                              0.7837 ± 0.0536
+  metrics.conf_0.001.overall.tp                                  90.4000 ± 5.5498
+  metrics.conf_0.001.per_class.0.f1                              0.0479 ± 0.0135
+  metrics.conf_0.001.per_class.0.fn                              25.4000 ± 7.9561
+  metrics.conf_0.001.per_class.0.fp                              3859.6000 ± 1349.2455
+  metrics.conf_0.001.per_class.0.precision                       0.0248 ± 0.0072
+  metrics.conf_0.001.per_class.0.recall                          0.7837 ± 0.0536
+  metrics.conf_0.001.per_class.0.tp                              90.4000 ± 5.5498
+  metrics.conf_0.25.conf                                         0.2500 ± 0.0000
+  metrics.conf_0.25.image_level.negatives                        72.4000 ± 1.1402
+  metrics.conf_0.25.image_level.negatives_flagged                1.4000 ± 1.9494
+  metrics.conf_0.25.image_level.positives                        72.4000 ± 1.1402
+  metrics.conf_0.25.image_level.positives_flagged                50.8000 ± 6.5345
+  metrics.conf_0.25.image_level.total_flagged                    52.2000 ± 8.0125
+  metrics.conf_0.25.image_level.total_images                     144.8000 ± 2.2804
+  metrics.conf_0.25.localisation_on_hits.mean_iop                0.7898 ± 0.0195
+  metrics.conf_0.25.localisation_on_hits.n                       39.2000 ± 3.1937
+  metrics.conf_0.25.mean_best_iou_per_gt                         0.3058 ± 0.0550
+  metrics.conf_0.25.overall.fn                                   76.6000 ± 13.3342
+  metrics.conf_0.25.overall.fp                                   52.8000 ± 15.5145
+  metrics.conf_0.25.overall.tp                                   39.2000 ± 3.1937
+  metrics.conf_0.25.per_class.0.f1                               0.3788 ± 0.0408
+  metrics.conf_0.25.per_class.0.fn                               76.6000 ± 13.3342
+  metrics.conf_0.25.per_class.0.fp                               52.8000 ± 15.5145
+  metrics.conf_0.25.per_class.0.precision                        0.4354 ± 0.0725
+  metrics.conf_0.25.per_class.0.recall                           0.3422 ± 0.0533
+  metrics.conf_0.25.per_class.0.tp                               39.2000 ± 3.1937
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.loc.mean_iog             0.7377 ± 0.0237
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.loc.mean_iop             0.6030 ± 0.0461
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.loc.mean_iou             0.4730 ± 0.0290
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.loc.n                    112.6000 ± 10.8536
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.overall.f1               0.0601 ± 0.0181
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.overall.fn               3.2000 ± 1.9235
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.overall.fp               3837.4000 ± 1353.3508
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.overall.precision        0.0311 ± 0.0096
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.overall.recall           0.9724 ± 0.0170
+  sweep.conf_0.001.iog>=0.3_&_iop>=0.10.overall.tp               112.6000 ± 10.8536
+  sweep.conf_0.001.iog>=0.5.loc.mean_iog                         0.7855 ± 0.0176
+  sweep.conf_0.001.iog>=0.5.loc.mean_iop                         0.6038 ± 0.0425
+  sweep.conf_0.001.iog>=0.5.loc.mean_iou                         0.4961 ± 0.0279
+  sweep.conf_0.001.iog>=0.5.loc.n                                111.6000 ± 9.8641
+  sweep.conf_0.001.iog>=0.5.overall.f1                           0.0594 ± 0.0174
+  sweep.conf_0.001.iog>=0.5.overall.fn                           4.2000 ± 3.0332
+  sweep.conf_0.001.iog>=0.5.overall.fp                           3838.4000 ± 1352.2007
+  sweep.conf_0.001.iog>=0.5.overall.precision                    0.0307 ± 0.0093
+  sweep.conf_0.001.iog>=0.5.overall.recall                       0.9645 ± 0.0257
+  sweep.conf_0.001.iog>=0.5.overall.tp                           111.6000 ± 9.8641
+  sweep.conf_0.001.iou>=0.5.loc.mean_iog                         0.8124 ± 0.0177
+  sweep.conf_0.001.iou>=0.5.loc.mean_iop                         0.7640 ± 0.0148
+  sweep.conf_0.001.iou>=0.5.loc.mean_iou                         0.6302 ± 0.0108
+  sweep.conf_0.001.iou>=0.5.loc.n                                90.4000 ± 5.5498
+  sweep.conf_0.001.iou>=0.5.overall.f1                           0.0479 ± 0.0135
+  sweep.conf_0.001.iou>=0.5.overall.fn                           25.4000 ± 7.9561
+  sweep.conf_0.001.iou>=0.5.overall.fp                           3859.6000 ± 1349.2455
+  sweep.conf_0.001.iou>=0.5.overall.precision                    0.0248 ± 0.0072
+  sweep.conf_0.001.iou>=0.5.overall.recall                       0.7837 ± 0.0536
+  sweep.conf_0.001.iou>=0.5.overall.tp                           90.4000 ± 5.5498
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.loc.mean_iog              0.7719 ± 0.0136
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.loc.mean_iop              0.6839 ± 0.0447
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.loc.mean_iou              0.5503 ± 0.0242
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.loc.n                     59.4000 ± 7.0214
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.overall.f1                0.5714 ± 0.0519
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.overall.fn                56.4000 ± 16.0406
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.overall.fp                32.6000 ± 10.1637
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.overall.precision         0.6523 ± 0.0547
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.overall.recall            0.5189 ± 0.0936
+  sweep.conf_0.25.iog>=0.3_&_iop>=0.10.overall.tp                59.4000 ± 7.0214
+  sweep.conf_0.25.iog>=0.5.loc.mean_iog                          0.8160 ± 0.0080
+  sweep.conf_0.25.iog>=0.5.loc.mean_iop                          0.6880 ± 0.0414
+  sweep.conf_0.25.iog>=0.5.loc.mean_iou                          0.5767 ± 0.0282
+  sweep.conf_0.25.iog>=0.5.loc.n                                 54.6000 ± 6.2690
+  sweep.conf_0.25.iog>=0.5.overall.fn                            61.2000 ± 14.5842
+  sweep.conf_0.25.iog>=0.5.overall.fp                            37.4000 ± 10.6207
+  sweep.conf_0.25.iog>=0.5.overall.tp                            54.6000 ± 6.2690
+  sweep.conf_0.25.iou>=0.5.loc.mean_iog                          0.8325 ± 0.0173
+  sweep.conf_0.25.iou>=0.5.loc.mean_iop                          0.7898 ± 0.0195
+  sweep.conf_0.25.iou>=0.5.loc.mean_iou                          0.6641 ± 0.0165
+  sweep.conf_0.25.iou>=0.5.loc.n                                 39.2000 ± 3.1937
+  sweep.conf_0.25.iou>=0.5.overall.f1                            0.3788 ± 0.0408
+  sweep.conf_0.25.iou>=0.5.overall.fn                            76.6000 ± 13.3342
+  sweep.conf_0.25.iou>=0.5.overall.fp                            52.8000 ± 15.5145
+  sweep.conf_0.25.iou>=0.5.overall.precision                     0.4354 ± 0.0725
+  sweep.conf_0.25.iou>=0.5.overall.recall                        0.3422 ± 0.0533
+  sweep.conf_0.25.iou>=0.5.overall.tp                            39.2000 ± 3.1937
+  val_stock.map50_95                                             0.1052 ± 0.0275
+  val_stock.precision                                            0.4954 ± 0.0847
+  val_stock.recall                                               0.3378 ± 0.0555

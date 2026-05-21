@@ -1,0 +1,27 @@
+# kfold5_default_binary/fold_0  (detect, 148 test imgs)
+# classes: lesion
+# IoU match threshold: 0.5
+
+== conf_0.25 ==
+  box     P=0.333 R=0.027 F1=0.050  (TP=3 FP=6 FN=109)
+  loc/hit IoU=0.727 IoP=0.819 IoG=0.869  (n=3)
+  mean best IoU per GT (any conf) = 0.028
+  image   screening_acc=0.534  det_rate_pos=0.068  false_alarm_neg=0.000  (pos=74 neg=74)
+  counts  5/74 lesion-imgs flagged · 0/74 neg false-alarm · 5/148 total flagged
+
+== conf_0.001 ==
+  box     P=0.008 R=0.955 F1=0.017  (TP=107 FP=12645 FN=5)
+  loc/hit IoU=0.599 IoP=0.718 IoG=0.826  (n=107)
+  mean best IoU per GT (any conf) = 0.698
+  image   screening_acc=0.507  det_rate_pos=1.000  false_alarm_neg=0.987  (pos=74 neg=74)
+  counts  74/74 lesion-imgs flagged · 73/74 neg false-alarm · 147/148 total flagged
+
+== match-rule sweep (box P/R/F1 only; image-level is geometry-free → see above) ==
+  conf_0.25
+    iou>=0.5               P=0.333 R=0.027 F1=0.050  (TP=3 FP=6 FN=109)  IoG=0.869
+    iog>=0.5               P=0.667 R=0.054 F1=0.099  (TP=6 FP=3 FN=106)  IoG=0.760  <- headline
+    iog>=0.3 & iop>=0.10   P=0.667 R=0.054 F1=0.099  (TP=6 FP=3 FN=106)  IoG=0.760
+  conf_0.001
+    iou>=0.5               P=0.008 R=0.955 F1=0.017  (TP=107 FP=12645 FN=5)  IoG=0.826
+    iog>=0.5               P=0.009 R=1.000 F1=0.017  (TP=112 FP=12640 FN=0)  IoG=0.812  <- headline
+    iog>=0.3 & iop>=0.10   P=0.009 R=1.000 F1=0.017  (TP=112 FP=12640 FN=0)  IoG=0.750

@@ -420,6 +420,73 @@ def build_binary_plus_roboflow(name: str) -> DatasetSpec:
     return DatasetSpec(name, root, yaml, ["lesion"], "detect", test_paths)
 
 
+# ── exp9 : 10-fold CV over (pool + locked test) + resolution-normalised neg ──
+
+def build_kfold_fold(experiment: str, fold_idx: int, binary: bool,
+                     splits_path: Path) -> DatasetSpec:
+    """One fold of a k-fold experiment (exp9).
+
+    Mirrors build_original_plus_negatives (exp8) on the positive side:
+    positives → class 0 if binary, kept-as-disease-class if 5-class;
+    resolution-normalised negatives folded into train/val with empty labels;
+    fair 1:1 test slice (no-skill screening_acc = 0.50). The single variable
+    vs exp8 is that the splits come from k-fold (shared splits.json) and the
+    test slice is a TRUE blackbox for this fold (never in train or val).
+    """
+    from common.kfold import build_or_load as _build_split
+    from common.kfold import materialise_fold
+
+    split = _build_split(splits_path)
+    fold = materialise_fold(split, fold_idx)
+
+    name = f"{experiment}/fold_{fold_idx}"
+    root = settings.DATASETS_ROOT / name
+    _fresh(root)
+
+    def emit_pos(items: list, sp: str) -> None:
+        for img, lbl, key in items:
+            rows = _read_box_label(lbl)
+            text = "\n".join(
+                f"{0 if binary else c} {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}"
+                for c, cx, cy, w, h in rows
+            )
+            _place(root, sp, key, img, text)
+
+    emit_pos(fold.train_pos, "train")
+    emit_pos(fold.val_pos, "val")
+    emit_pos(fold.test_pos, "test")
+
+    def emit_neg(paths: list[Path], sp: str) -> None:
+        for img in paths:
+            _place(root, sp, f"neg__{img.stem}", img, "")
+
+    emit_neg(fold.train_neg, "train")
+    emit_neg(fold.val_neg, "val")
+    emit_neg(fold.test_neg, "test")
+
+    names = ["lesion"] if binary else settings.ORIG_CLASS_NAMES
+    yaml = _write_yaml(root, names)
+    test_paths = sorted((root / "images" / "test").iterdir(),
+                        key=lambda p: p.name)
+
+    (root / "dataset_stats.json").write_text(json.dumps({
+        "fold": fold_idx,
+        "k": split["k"],
+        "mode": "binary" if binary else "5class",
+        "n_train_pos": len(fold.train_pos),
+        "n_val_pos": len(fold.val_pos),
+        "n_test_pos": len(fold.test_pos),
+        "n_train_neg": len(fold.train_neg),
+        "n_val_neg": len(fold.val_neg),
+        "n_test_neg": len(fold.test_neg),
+        "no_skill_screening_acc": 0.5,
+        "negative_target_long_side": split["negative_target_long_side"],
+        "note": "blackbox test fold; same splits.json shared with the "
+                "binary/5class counterpart for a controlled comparison",
+    }, indent=2))
+    return DatasetSpec(name, root, yaml, names, "detect", test_paths)
+
+
 def _iter_originals():
     """Yield (image, labels_dir_or_None, namespace_prefix) for every original
     image used as an expert test image: pool, locked test, and Normal."""

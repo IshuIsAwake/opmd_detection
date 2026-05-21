@@ -37,11 +37,26 @@
 > — exp1/exp2 trained on **zero negatives**. Give the binary detector that
 > signal and measure it fairly (resolution-normalized 1:1 negatives) and it is
 > a credible screener: **28/37 lesion images caught, 1/37 false alarm,
-> screening_acc 0.865** (no-skill 0.50). Detection is NOT abandoned. The one
-> confound-free failure left is **confidence calibration**. Active plan is now
-> **augmentation + k-fold CV**, then calibration — see `Experimenting/RESULTS.md`
-> §6/§7 and `HANDOFF.md` §NEXT. The whole-image classification pivot is
-> deferred (a later comparison arm), not the path.
+> screening_acc 0.865** (no-skill 0.50). Detection is NOT abandoned.
+>
+> **k-fold + augmentation update (2026-05-21, supersedes exp8b's single-fold
+> headline AND validates §3 step 4 below).** The exp8b 0.865 was cross-
+> validated to **0.842 ± 0.041 paired 5-fold CV** (`Experimenting/RESULTS.md`
+> §8). On the way, exp10 swept augmentation and exp11 paired-tested the
+> winner: **`geom_no_color` (= YOLO defaults but `hsv_h=hsv_s=hsv_v=0`) beats
+> the default recipe by +0.101 paired screening, 3.6× tighter std, winning
+> 4/5 folds** — the §3 step 4 "no HSV / colour is diagnostic" rule below is
+> now empirically validated, not a design assertion. Note that exp1–8
+> silently violated this rule (YOLO defaults include HSV jitter); exp11 is
+> the first run where it was actually enforced. On fold 0 of exp11, default
+> caught 5/72 lesions; geom_no_color caught 47/72 — HSV jitter appears to
+> destabilise training on small medical data, not just corrupt a feature.
+> The remaining confound-free failure is **confidence calibration**
+> (FA@conf-0.001 = 0.702 ± 0.068 across the paired CV, slightly better than
+> exp8b's single-fold 0.946 tail but still bad). Active plan is now
+> **yolov8 transfer-learning sweep on the same kfold5 splits + geom_no_color
+> aug**, then calibration — see `HANDOFF.md` §NEXT. Whole-image
+> classification pivot stays deferred.
 
 ## 0. The Core Idea
 
@@ -160,7 +175,16 @@ No renaming, no test split (already done). Produce a YOLO dataset:
 
 - `imgsz=640`, `epochs≈100`, `patience≈30`. Light geometric aug only
   (flips, small scale/translate). **No HSV/colour distortion** — colour is
-  diagnostic signal.
+  diagnostic signal. **(VALIDATED 2026-05-21 by exp11 paired 5-fold CV:
+  YOLO defaults with HSV jitter cost −0.101 paired screening_acc, 3.6× wider
+  std, and on fold 0 caused near-total training collapse — 5/72 caught vs
+  47/72 with HSV off. `Experimenting/RESULTS.md` §8c.)** Note: also references
+  the §3 step 4 "no HSV" rule. Throughout exp1–8 this rule was silently
+  violated by `train_eval.run` using YOLO defaults; from `exp10` / `aug.py`
+  onward, `geom_no_color = {hsv_h:0, hsv_s:0, hsv_v:0}` is the adopted
+  augmentation level. The rest of the YOLO defaults (mosaic, fliplr,
+  scale/translate, erasing) are kept — the exp10 sweep confirmed they are
+  the load-bearing piece (off → 0.595, default → 0.865 on the same split).
 - **Metric that matters: recall, not mAP.** A missed lesion is far worse than
   a false box for screening. Evaluate on val and report **lesion recall at a
   low confidence threshold (≈0.15–0.25)**. Pick the threshold for high recall;

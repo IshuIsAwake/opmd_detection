@@ -1,0 +1,17 @@
+{
+  "experiment": "kfold5_default_binary/fold_2",
+  "dataset_spec_name": "kfold5_default_binary/fold_2",
+  "task": "detect",
+  "model_weights": "yolov8n.pt",
+  "class_names": [
+    "lesion"
+  ],
+  "data_yaml": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/_datasets/kfold5_default_binary/fold_2/data.yaml",
+  "epochs": 100,
+  "imgsz": 640,
+  "batch": 8,
+  "amp": false,
+  "seed": 42,
+  "device": "0",
+  "train_kwargs_override": {}
+}

@@ -8,53 +8,86 @@
 
 ---
 
-## ✅ exp8 CONCLUDED (2026-05-19) — detection revived. 🔴 NEXT = augmentation + k-fold
+## ✅ exp8 → exp9 → exp10 → exp11 CONCLUDED (2026-05-21). 🔴 NEXT = transfer-learning sweep, then calibration
 
-**Authority for everything below: `Experimenting/RESULTS.md` §7 (full numbers)
-and §6 (next plan). Read that first.**
+**Authority: `Experimenting/RESULTS.md` §8 (the full exp9/10/11 chain).
+Earlier history: §7 (exp8 — the "detection is dead" retraction). Read §8
+first.**
 
-exp8a/exp8b ran: exp1/exp2 byte-identical on the positive side, only variable =
-resolution-normalized negatives (Normal resized to the positives' median long
-side = **276 px**) folded into train + a 1:1 37-img slice into test (no-skill
-screening = 0.50). `Number A` = old exp1/exp2 weights re-scored on the same
-fair test, no retrain (`eval_fair_negatives.py`).
+### What we have now (cross-validated headline)
 
-**Result — the "detector is below trivial / detection is dead" verdict is
-RETRACTED.** It was a base-rate artifact (570 negatives → trivial = 0.939) on
-top of a real bug: exp1/exp2 trained on **zero negatives**. The fair ruler
-alone moved false-alarm only 0.621→0.568 (resolution confound real but ~5pp);
-**negative training did the work** — exp8b false-alarm **21→1 /37**, det_rate
-≈ held (31→28, 37-img noise), **screening_acc 0.865** (no-skill 0.50); exp8a
-13→2 /37, 0.784, and exp1's two dead classes (Leuk/OSMF) revived. Binary >
-5-class confirmed with a *usable* number. The one confound-free survivor:
-**confidence calibration** (conf-0.001 still false_alarm 0.946).
+`yolov8n` binary detector, fair 1:1 resolution-normalized negatives,
+**`geom_no_color`** augmentation (YOLO defaults but `hsv_h=hsv_s=hsv_v=0`),
+**paired 5-fold CV** on `_datasets/kfold5_splits.json`:
 
-Match-rule decision (`eval_match_rules.py` sweep, no retrain): the IoU≥0.5 gate
-was relabelling well-placed offset boxes as FP — under IoG, precision AND
-recall rise together. IoP floor inert (model doesn't balloon boxes) → dropped.
-**Adopted `iog>=0.5` as the headline localisation metric** (≥half the lesion
-covered; what the padded crop needs), `iou>=0.5` kept for exp1–8 continuity,
-`iog>=0.3` looser secondary. Wired into `metrics.py` (`match_rule_sweep` in
-every run's output). NB: this does **not** move det_rate (geometry-free) — the
-screening recall stays ≈0.75.
+| metric (paired 5-fold, n=5) | mean ± std |
+|---|---|
+| screening_acc | **0.842 ± 0.041**  (CI95 ±0.036) |
+| det_rate_pos | 0.703 ± 0.099 |
+| false_alarm_neg | 0.020 ± 0.027 |
+| box F1 (iog≥0.5) | 0.525 ± 0.036 |
+| loc IoG (hits) | 0.833 ± 0.017 |
+| FA neg @ conf 0.001 | 0.702 ± 0.068  ← the residual |
+| val_stock mAP50 | 0.328 ± 0.067 |
 
-### 🔴 ACTIVE NEXT (separate conversation, to save tokens) — two things, untested
+Cumulative across all 5 folds: **~254 / 362 lesion images caught, ~108
+missed, ~7 / 362 false alarms.**
 
-1. **Augmentation** — none ever applied (exp1–8 = YOLO built-in only). With
-   ~277 thumbnails this is the most likely real lift.
-2. **k-fold cross-validation** — every number so far is one 85/15 split on a
-   37-img test (±2–3 = noise). At ~277 imgs k-fold buys a *trustworthy*
-   number, not a bigger one.
+### Two validated rules to keep
 
-Build both as new `Experimenting/` experiments in the exp8 pattern (binary
-first — it is the better front-end). Keep the fair 1:1 resolution-normalized
-negatives and the `iog>=0.5` headline rule. After that the real target is
-**confidence calibration** (the only confound-free failure left). The
-whole-image classification pivot (EfficientNet-B2 / DINOv2 frozen, Normal-class
-resolution trap) is **deferred, not dead** — a later controlled comparison arm
-on the same seeded split, no longer the escape hatch. User runs all GPU
-training; you write code + exact commands. This supersedes the "yolov8s sweep /
-classifier-phase" next-steps in the body below.
+1. **HSV jitter off.** `geom_no_color` beats `default` (= YOLO defaults
+   including `hsv_h=0.015, hsv_s=0.7, hsv_v=0.4`) by **+0.101 paired
+   screening, 3.6× tighter std, 4/5 folds** (RESULTS.md §8c). On fold 0 the
+   default recipe caught 5/72 lesions where geom_no_color caught 47/72 —
+   consistent with HSV jitter destabilising training on ~250-photo medical
+   data, though that's a hypothesis (one seed per fold, not multi-seed).
+   The `instructions.md` §3 step 4 rule is now empirically validated.
+2. **`heavy` aug hurts independently of colour** (RESULTS.md §8b/§8c).
+   mixup + copy_paste + big rotate/scale/shear lose −0.135 paired screening
+   vs `geom_no_color`. At ~277 thumbnails the kitchen sink overwhelms the
+   data. Don't re-test.
+
+### What did NOT replicate
+
+exp10 produced screening 0.919 on the single exp8b split with `geom_no_color`.
+**That was a lucky draw** — exp11 paired CV mean is 0.842, no fold reached
+0.90, max was fold 4 at 0.880. The *direction* (HSV-off helps) was real;
+the magnitude wasn't. exp8b's single-fold 0.946 FA@conf-0.001 was likewise a
+tail event — typical is ~0.62–0.70.
+
+### 🔴 ACTIVE NEXT (separate conversation, to save tokens)
+
+**Transfer-learning sweep on the same kfold5 splits, with `geom_no_color`
+aug locked in.** Single-variable comparison vs the kfold5 headline
+(`kfold5_geom_no_color_binary`).
+
+Candidate axes (pick one to start; the others stack onto the same script):
+
+- **Model size:** `yolov8s.pt` (≈10× params of `n`) and `yolov8m.pt` on the
+  same 5 folds and aug. Will hurt VRAM (RTX 3050 6 GB) — likely needs
+  `batch=4` for `s`, `batch=2` for `m`.
+- **Pretrained vs scratch:** `yolov8n.yaml` from-scratch baseline (no COCO
+  pretraining) — answers "is COCO weight transfer actually doing work on
+  these thumbnails?"
+- **Longer schedule / cosine LR:** `epochs=200`, `cos_lr=True`, `patience=50`
+  — cheap if pretraining isn't the lever.
+
+The infrastructure is already in place: `exp11_kfold5_aug_binary.py` proves
+the parallel-pair pattern; copy it to `exp12_transfer_kfold5_binary.py` and
+swap the model weights / kwargs. Use the existing `compare_aug_kfold.py` to
+produce the paired head-to-head.
+
+**Then: confidence calibration.** FA@conf-0.001 = 0.702 ± 0.068 is the one
+thing neg-training + HSV-off + CV did not move. The handles to consider
+(not yet tried, in priority order): post-hoc temperature scaling on the
+saved logits, training-time focal loss, hard-negative mining from the
+`_normalized_negatives/` pool. This is unlikely to be data-limited.
+
+**User runs all GPU training**; you write code + exact commands.
+
+Deferred (not dead): **whole-image classification pivot** (EfficientNet-B2 /
+DINOv2 frozen, Normal-class resolution trap) — a later comparison arm on
+the same kfold5 splits, no longer the escape hatch.
 
 ---
 

@@ -1,0 +1,198 @@
+{
+  "experiment": "kfold5_default_binary/fold_4",
+  "task": "detect",
+  "class_names": [
+    "lesion"
+  ],
+  "n_test_images": 142,
+  "iou_match_threshold": 0.5,
+  "headline_localisation_rule": "iog>=0.5",
+  "metrics": {
+    "conf_0.25": {
+      "conf": 0.25,
+      "overall": {
+        "tp": 35,
+        "fp": 76,
+        "fn": 76,
+        "precision": 0.3153,
+        "recall": 0.3153,
+        "f1": 0.3153
+      },
+      "per_class": {
+        "0": {
+          "tp": 35,
+          "fp": 76,
+          "fn": 76,
+          "precision": 0.3153,
+          "recall": 0.3153,
+          "f1": 0.3153
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6719,
+        "mean_iop": 0.8025,
+        "mean_iog": 0.8315,
+        "n": 35
+      },
+      "mean_best_iou_per_gt": 0.3203,
+      "image_level": {
+        "screening_accuracy": 0.8944,
+        "detection_rate_on_positives": 0.7887,
+        "false_alarm_rate_on_negatives": 0.0,
+        "positives": 71,
+        "negatives": 71,
+        "positives_flagged": 56,
+        "negatives_flagged": 0,
+        "total_flagged": 56,
+        "total_images": 142
+      }
+    },
+    "conf_0.001": {
+      "conf": 0.001,
+      "overall": {
+        "tp": 93,
+        "fp": 7944,
+        "fn": 18,
+        "precision": 0.0116,
+        "recall": 0.8378,
+        "f1": 0.0228
+      },
+      "per_class": {
+        "0": {
+          "tp": 93,
+          "fp": 7944,
+          "fn": 18,
+          "precision": 0.0116,
+          "recall": 0.8378,
+          "f1": 0.0228
+        }
+      },
+      "localisation_on_hits": {
+        "mean_iou": 0.6297,
+        "mean_iop": 0.7493,
+        "mean_iog": 0.8284,
+        "n": 93
+      },
+      "mean_best_iou_per_gt": 0.6642,
+      "image_level": {
+        "screening_accuracy": 0.6408,
+        "detection_rate_on_positives": 1.0,
+        "false_alarm_rate_on_negatives": 0.7183,
+        "positives": 71,
+        "negatives": 71,
+        "positives_flagged": 71,
+        "negatives_flagged": 51,
+        "total_flagged": 122,
+        "total_images": 142
+      }
+    }
+  },
+  "match_rule_sweep": {
+    "conf_0.25": [
+      {
+        "rule": "iou>=0.5",
+        "overall": {
+          "tp": 35,
+          "fp": 76,
+          "fn": 76,
+          "precision": 0.3153,
+          "recall": 0.3153,
+          "f1": 0.3153
+        },
+        "localisation_on_hits": {
+          "mean_iou": 0.6719,
+          "mean_iop": 0.8025,
+          "mean_iog": 0.8315,
+          "n": 35
+        }
+      },
+      {
+        "rule": "iog>=0.5",
+        "overall": {
+          "tp": 59,
+          "fp": 52,
+          "fn": 52,
+          "precision": 0.5315,
+          "recall": 0.5315,
+          "f1": 0.5315
+        },
+        "localisation_on_hits": {
+          "mean_iou": 0.5187,
+          "mean_iop": 0.6305,
+          "mean_iog": 0.801,
+          "n": 59
+        }
+      },
+      {
+        "rule": "iog>=0.3 & iop>=0.10",
+        "overall": {
+          "tp": 64,
+          "fp": 47,
+          "fn": 47,
+          "precision": 0.5766,
+          "recall": 0.5766,
+          "f1": 0.5766
+        },
+        "localisation_on_hits": {
+          "mean_iou": 0.4941,
+          "mean_iop": 0.6307,
+          "mean_iog": 0.7569,
+          "n": 64
+        }
+      }
+    ],
+    "conf_0.001": [
+      {
+        "rule": "iou>=0.5",
+        "overall": {
+          "tp": 93,
+          "fp": 7944,
+          "fn": 18,
+          "precision": 0.0116,
+          "recall": 0.8378,
+          "f1": 0.0228
+        },
+        "localisation_on_hits": {
+          "mean_iou": 0.6297,
+          "mean_iop": 0.7493,
+          "mean_iog": 0.8284,
+          "n": 93
+        }
+      },
+      {
+        "rule": "iog>=0.5",
+        "overall": {
+          "tp": 111,
+          "fp": 7926,
+          "fn": 0,
+          "precision": 0.0138,
+          "recall": 1.0,
+          "f1": 0.0272
+        },
+        "localisation_on_hits": {
+          "mean_iou": 0.4613,
+          "mean_iop": 0.567,
+          "mean_iog": 0.7802,
+          "n": 111
+        }
+      },
+      {
+        "rule": "iog>=0.3 & iop>=0.10",
+        "overall": {
+          "tp": 111,
+          "fp": 7926,
+          "fn": 0,
+          "precision": 0.0138,
+          "recall": 1.0,
+          "f1": 0.0272
+        },
+        "localisation_on_hits": {
+          "mean_iou": 0.4334,
+          "mean_iop": 0.5602,
+          "mean_iog": 0.7184,
+          "n": 111
+        }
+      }
+    ]
+  }
+}

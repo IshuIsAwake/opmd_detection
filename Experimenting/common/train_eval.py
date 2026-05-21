@@ -18,14 +18,27 @@ from common import settings
 from common.metrics import evaluate
 
 
-def run(spec, model_weights: str) -> dict:
+def run(spec, model_weights: str, run_name: str | None = None,
+        train_kwargs: dict | None = None) -> dict:
+    """Train + evaluate one spec.
+
+    ``run_name``  — overrides spec.name for the results dir. Lets two runs
+                    share a dataset tree (e.g. the exp10 aug sweep reuses
+                    exp8b's binary_negatives data on disk but writes results
+                    under aug_<level>_binary).
+    ``train_kwargs`` — extra/override kwargs forwarded to model.train(). Used
+                    to switch augmentation level without touching this file.
+    """
     from ultralytics import YOLO
 
-    results_dir = settings.RESULTS_ROOT / spec.name
+    name = run_name or spec.name
+    results_dir = settings.RESULTS_ROOT / name
     results_dir.mkdir(parents=True, exist_ok=True)
+    train_kwargs = dict(train_kwargs or {})
 
     (results_dir / "run.json").write_text(json.dumps({
-        "experiment": spec.name,
+        "experiment": name,
+        "dataset_spec_name": spec.name,
         "task": spec.task,
         "model_weights": model_weights,
         "class_names": spec.class_names,
@@ -36,6 +49,7 @@ def run(spec, model_weights: str) -> dict:
         "amp": settings.AMP,
         "seed": settings.SEED,
         "device": settings.DEVICE,
+        "train_kwargs_override": train_kwargs,
     }, indent=2))
 
     # ── train ────────────────────────────────────────────────────────────────
@@ -52,6 +66,7 @@ def run(spec, model_weights: str) -> dict:
         name="train",
         exist_ok=True,
         verbose=True,
+        **train_kwargs,
     )
     best = results_dir / "train" / "weights" / "best.pt"
     if not best.exists():
@@ -80,6 +95,6 @@ def run(spec, model_weights: str) -> dict:
 
     # ── honest custom evaluation ─────────────────────────────────────────────
     report = evaluate(trained, spec, results_dir)
-    print(f"\n[{spec.name}] done → {results_dir}/metrics.txt")
+    print(f"\n[{name}] done → {results_dir}/metrics.txt")
     print((results_dir / "metrics.txt").read_text())
     return report

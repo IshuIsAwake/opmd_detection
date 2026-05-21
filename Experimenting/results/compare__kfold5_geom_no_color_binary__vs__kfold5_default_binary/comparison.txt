@@ -1,0 +1,37 @@
+# head-to-head: kfold5_geom_no_color_binary  vs  kfold5_default_binary
+# A = geom_no_   B = default   |  folds: A=5 B=5
+
+# 1. AGGREGATE  (mean ± std,  Δ = A − B,  + on Δ = A better)
+  metric         geom_no_ mean geom_no_ std      default mean default std           Δ
+  screen_acc             0.842      0.041             0.741      0.147      +0.101
+  det_rate               0.703      0.099             0.484      0.297      +0.218
+  false_alm              0.020      0.027             0.003      0.006      -0.017
+  P_iou                  0.435      0.073             0.404      0.081      +0.031
+  R_iou                  0.342      0.053             0.215      0.155      +0.127
+  F1_iou                 0.379      0.041             0.254      0.145      +0.125
+  P_iog                  0.600      0.052             0.596      0.050      +0.004
+  R_iog                  0.476      0.079             0.308      0.216      +0.168
+  F1_iog                 0.525      0.036             0.362      0.193      +0.163
+  mAP50                  0.328      0.067             0.252      0.085      +0.075
+  FA@.001                0.702      0.068             0.767      0.128      +0.065
+
+# 2. PER-FOLD HEAD-TO-HEAD  (same fold = same split; Δ in 'A better' sign)
+   fold  A_screen_acc B_screen_acc       Δ  A_det_rate B_det_rate       Δ  A_false_alm B_false_alm       Δ    A_F1_iog   B_F1_iog       Δ     A_mAP50    B_mAP50       Δ
+  fold_0       0.824      0.534  +0.290       0.649      0.068  +0.581       0.000      0.000  -0.000       0.503      0.099  +0.403       0.376      0.176  +0.200
+  fold_1       0.781      0.678  +0.103       0.562      0.356  +0.205       0.000      0.000  -0.000       0.480      0.248  +0.232       0.292      0.211  +0.081
+  fold_2       0.875      0.868  +0.007       0.750      0.750  +0.000       0.000      0.014  +0.014       0.554      0.556  -0.002       0.409      0.397  +0.012
+  fold_3       0.847      0.729  +0.118       0.736      0.458  +0.278       0.042      0.000  -0.042       0.518      0.374  +0.144       0.240      0.241  -0.002
+  fold_4       0.880      0.894  -0.014       0.817      0.789  +0.028       0.056      0.000  -0.056       0.569      0.531  +0.037       0.322      0.236  +0.086
+
+# 3. WIN COUNTS  (per metric; ties go to B)
+  screen_acc    geom_no_ wins 4/5   default wins 1/5
+  det_rate      geom_no_ wins 4/5   default wins 1/5
+  false_alm     geom_no_ wins 1/5   default wins 4/5
+  P_iou         geom_no_ wins 3/5   default wins 2/5
+  R_iou         geom_no_ wins 4/5   default wins 1/5
+  F1_iou        geom_no_ wins 4/5   default wins 1/5
+  P_iog         geom_no_ wins 3/5   default wins 2/5
+  R_iog         geom_no_ wins 4/5   default wins 1/5
+  F1_iog        geom_no_ wins 4/5   default wins 1/5
+  mAP50         geom_no_ wins 4/5   default wins 1/5
+  FA@.001       geom_no_ wins 3/5   default wins 2/5

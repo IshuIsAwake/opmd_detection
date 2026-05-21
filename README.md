@@ -14,50 +14,69 @@ classifier** → Grad-CAM. If the detector finds nothing, the answer is
 
 ## 1. Current Status and Results
 
-**State (2026-05-19): detection is a credible screener; the earlier "detection
-is dead" verdict was retracted by a controlled experiment (exp8).**
+**State (2026-05-21): cross-validated binary detector is the headline.** The
+exp8 retraction held; the exp9 → exp10 → exp11 chain produced a paired,
+cross-validated baseline and validated the `instructions.md` "colour is
+diagnostic" rule. Active residual = **confidence calibration**.
 
 The clean-baseline investigation under `Experimenting/` (no classifier head,
-nothing tuned) settled the following. Deltas are controlled single-variable
-comparisons; absolute numbers are on a small test (see caveats).
+nothing tuned, all single-variable controlled comparisons) settled:
 
-**Settled / measured:**
+**Headline binary detector** — `yolov8n`, 100 epochs, `imgsz=640`, `batch=8`,
+seed 42, fair 1:1 resolution-normalized negatives, **`geom_no_color`
+augmentation** (= YOLO defaults but `hsv_h=hsv_s=hsv_v=0`); paired 5-fold CV
+on (pool + locked test = 362 positives) + 5-way negative slices:
+
+| metric (paired 5-fold, n=5) | mean ± std | range |
+|---|---|---|
+| **screening_acc** | **0.842 ± 0.041** | [0.781, 0.880] |
+| det_rate_pos | 0.703 ± 0.099 | [0.562, 0.817] |
+| false_alarm_neg | 0.020 ± 0.027 | [0.000, 0.056] |
+| box F1 (iog≥0.5) | 0.525 ± 0.036 | — |
+| loc IoG on hits | 0.833 ± 0.017 | — |
+| val_stock mAP50 | 0.328 ± 0.067 | — |
+| FA neg @ conf 0.001 | 0.702 ± 0.068 | — |
+
+Cumulative across all 5 folds (every positive + every fair negative tested
+once): **~254 of 362 lesion images caught, ~108 missed, ~7 of 362 false
+alarms**. No-skill screening = 0.50.
+
+**Settled / measured (this is what's true now):**
 - **Two-stage structure is sound.** Binary YOLO ≈ **3× the recall** of 5-class
   YOLO on identical data (exp1→exp2). Don't make YOLO classify.
 - **The "loose boxes" rationale is empirically false.** Localisation-on-hits
   IoU 0.63–0.69 every run — when the detector hits, boxes are fine.
-- **Roboflow scale-up does not transfer** to the original imaging domain
-  (controlled exp2 vs exp7; experts P 0.015–0.031 on the original domain).
-- **"Detector is below a trivial baseline" — RETRACTED.** It was a
-  570-negative base-rate artifact on top of a real bug: exp1/exp2 trained on
-  **zero** negatives. Give the binary detector the negative signal and measure
-  it fairly (resolution-normalized 1:1 negatives):
-
-  | conf 0.25, fair test | lesions caught | false alarm | screening_acc |
-  |---|---|---|---|
-  | exp2 weights, no neg training (*Number A*) | 31/37 | 21/37 | 0.635 |
-  | **exp8b — binary, neg in train** | **28/37** | **1/37** | **0.865** |
-  | **exp8a — 5-class, neg in train** | 23/37 | 2/37 | 0.784 |
-
-  No-skill line = 0.50 (1:1). The fair ruler alone moved false-alarm only
-  0.621→0.568 (resolution confound real but ~5 pp); **negative training did
-  the work** (false-alarm 21→1 /37, recall ≈ held). Binary > 5-class with a
-  usable number.
-
-**The one open, confound-free problem: confidence calibration.** At conf
-0.001 every detector — even after negative training — fires on everything
-(exp8b false-alarm 0.946). Not data, not resolution, not base rate.
+- **Roboflow scale-up does not transfer** (controlled exp2 vs exp7; experts
+  P 0.015–0.031 on the original domain).
+- **Detection is NOT dead.** "Below trivial baseline" was a 570-negative
+  base-rate artifact on top of a real bug (exp1/exp2 trained on zero negatives).
+  Fair 1:1 resolution-normalized negatives + negatives in train → screening
+  works (exp8b 0.865 single fold; 0.842 ± 0.041 across the paired 5-fold CV).
+- **Colour is diagnostic — VALIDATED.** YOLO's default `hsv_*` jitter was
+  silently applied through exp1–8. Paired 5-fold CV (exp11): **geom_no_color
+  beats default by +0.101 screening, with 3.6× tighter std, winning 4/5 folds**
+  (RESULTS.md §8c). On fold 0 the default recipe caught 5/72 lesions
+  (training near-collapse) where geom_no_color caught 47/72. The
+  `instructions.md` §3 step 4 rule is now empirically validated, not an
+  assertion.
+- **exp10's single-fold 0.919 was a lucky split.** The *direction* (HSV-off
+  helps) was real; the magnitude (+0.054 vs default on that split) was not.
+  CV mean is 0.842, not 0.919.
+- **Calibration is the one residual.** FA@conf-0.001 = 0.702 ± 0.068 across
+  the paired CV — better than the single-fold 0.946 exp8b figure suggested,
+  but still well above no-skill. Aug + neg-training + CV none of them moved
+  this; it's the next real target.
 
 **Localisation metric.** The `IoU≥0.5` match gate understated localisation
-(it relabelled well-placed offset boxes as false positives). Headline is now
+(it relabelled well-placed offset boxes as false positives). Headline is
 **`IoG≥0.5`** ("the detection covers ≥half the annotated lesion"); `IoU≥0.5`
-kept for continuity. This does **not** move the screening recall (det_rate is
-geometry-free, ≈0.75) — it is the honest crop-quality number.
+kept for continuity.
 
-**Active next (separate work):** **augmentation + k-fold CV** (neither ever
-tried; expected to lift/harden the numbers), then confidence calibration. The
-whole-image classification pivot (EfficientNet-B2 / DINOv2 frozen) is
-**deferred — a later comparison arm, not the path.**
+**Active next:** **yolov8 transfer-learning sweep** on the same kfold5
+splits, with `geom_no_color` aug locked in (single-variable comparison
+against the kfold5_geom_no_color_binary headline). Then confidence
+calibration. The whole-image classification pivot (EfficientNet-B2 / DINOv2
+frozen) stays deferred — a later comparison arm, not the path.
 
 ---
 
@@ -163,12 +182,28 @@ negatives**. Tested controlled:
 `eval_with_negatives.py` (raw 570-neg, superseded), `eval_fair_negatives.py`
 (Number A), `eval_match_rules.py`.
 
-### Phase 4 — Active next (not yet done)
+### Phase 4 — k-fold + augmentation chain (2026-05-20/21, exp9 → exp10 → exp11)
 
-**Augmentation + k-fold CV** (never tried; k-fold was retired in Phase 0 as
-premature, now appropriate), then **confidence calibration** (the only
-confound-free failure left). Whole-image classification (EfficientNet-B2 /
-DINOv2 frozen) is a **deferred comparison arm, not the path**.
+| # | what | key finding |
+|---|---|---|
+| **exp9** | 10-fold CV of exp8b recipe | screening 0.840 ± 0.063 — verified exp8b within noise; exp8b's FA@.001=0.946 was a tail draw (typical 0.618 ± 0.140) |
+| **exp10** | 6-level aug sweep on exp8b split | `geom_no_color` 0.919 single-fold — best of sweep; `heavy` and `light` both worse than `default`; `instructions.md` HSV rule directionally supported |
+| **exp11** | **Paired 5-fold CV: geom_no_color vs default** | **HSV-off validated.** Geom beats default +0.101 screening / +0.219 det_rate, 3.6× tighter std, wins 4/5 folds. exp10's 0.919 was lucky; CV mean is 0.842 ± 0.041 |
+
+The paired exp11 mechanism is striking: fold-0 of default caught 5/72 lesions
+(training near-collapse); same fold + HSV off caught 47/72. Consistent with
+HSV jitter destabilising training on ~250-photo medical data, not just
+"corrupting a useful feature" — though that mechanism remains a hypothesis
+(one seed per fold, not multi-seed retrains). See `Experimenting/RESULTS.md`
+§8 for the full chain.
+
+### Phase 5 — Active next
+
+**yolov8 transfer-learning sweep** on the same `kfold5_splits.json` with
+`geom_no_color` aug locked in — single-variable comparison against the
+kfold5 binary headline. Then **confidence calibration** (the one residual
+neg-training + aug + CV did not move). Whole-image classification
+(EfficientNet-B2 / DINOv2 frozen) stays a **deferred comparison arm**.
 
 ---
 

@@ -5,17 +5,21 @@ describes *how* to run; this file is *what we found and what it means*.
 Everything below is from runs the user executed on the RTX 3050; no number is
 tuned or cherry-picked.
 
-> One-line verdict (revised after exp8, §7): the "loose boxes" rationale is
-> empirically false and the Roboflow scale-up does not transfer — both still
-> hold. **But the "detector is below a trivial baseline / detection is dead"
-> conclusion is RETRACTED.** It was a base-rate artifact (570 negatives) on
-> top of a real bug: exp1/exp2 trained on **zero** negatives. Give the binary
-> detector the negative signal it always lacked and measure it fairly (exp8b:
-> 1:1 resolution-normalized negatives): **28/37 lesion images caught, 1/37
-> false alarm, screening_acc 0.865** (no-skill = 0.50). Detection is a
-> credible screener at conf 0.25. The one confound-free survivor is
-> **confidence calibration** (conf-0.001 still fires on everything). Active
-> next step: **augmentation + k-fold CV** (§6) for a trustworthy ceiling.
+> One-line verdict (after exp8 §7 and the §8 chain — current authority): the
+> "loose boxes" rationale is empirically false and the Roboflow scale-up does
+> not transfer — both hold. The "detection is dead" verdict is **retracted**
+> (was a base-rate artifact + a zero-negatives bug; §7). The cross-validated
+> binary detector with `geom_no_color` aug (YOLO defaults but `hsv_*=0`) is:
+> **screening_acc 0.842 ± 0.041, det_rate 0.703 ± 0.099, false_alarm
+> 0.020 ± 0.027, FA@conf-0.001 0.702 ± 0.068, loc IoG hits 0.833 ± 0.017**
+> (paired 5-fold CV, §8c). The `instructions.md` "colour is diagnostic" rule
+> is empirically **validated** (was design assertion until §8c — HSV-off
+> beats defaults +0.101 paired screening, 3.6× tighter std, 4/5 folds).
+> exp10's single-fold 0.919 was a lucky split, not the headline. Active
+> residual: **confidence calibration** (FA@conf-0.001 ≈ 0.70, the one thing
+> aug + neg-training + CV didn't move). Active next: yolov8 transfer-learning
+> sweep on the same kfold5 splits + geom_no_color aug — see `HANDOFF.md`
+> §NEXT.
 
 ---
 
@@ -163,29 +167,15 @@ exp1 dead classes @conf0.25: **Leukoplakia 0/0/0, OSMF 0/0/0**.
   isolation. **exp8a/exp8b (§7) re-measured this with resolution-normalized
   1:1 negatives in both train and test — confound resolved; see §7.**
 
-## 6. Next direction — augmentation + k-fold CV (active, fresh conversation)
+## 6. Next direction — DONE (k-fold + aug both executed; see §8)
 
-exp8 (§7) settled that detection is *not* dead and that negative training is
-the single biggest lever. Two things are now untested and both are expected to
-help and/or harden the numbers:
+Historical: this section called for augmentation + k-fold CV next. Both ran
+(§8). Current active brief = transfer-learning sweep, then confidence
+calibration. See **`HANDOFF.md` §NEXT**.
 
-- **Augmentation** — none has ever been applied (YOLO's built-in only). exp1–8
-  are all un-augmented. With ~277 thumbnails this is the most likely real lift.
-- **k-fold cross-validation** — every number so far is a single 85/15 split on
-  a 37-img test (±2–3 imgs = noise). At ~277 imgs, k-fold buys a *trustworthy*
-  number, not a bigger one. exp8's deltas are big enough to trust; the absolute
-  values are not, until k-fold.
-
-Run both as new `Experimenting/` experiments in the exp8 pattern (binary first
-— it is the better front-end, §7). Keep the fair 1:1 resolution-normalized
-negatives and the `iog>=0.5` headline localisation rule. After that, the real
-target is **confidence calibration** (conclusion 5) — the only confound-free
-failure left.
-
-**Deferred, not dead — the whole-image classification pivot** (EfficientNet-B2
-/ DINOv2 frozen, the Normal-class resolution trap). exp8 revived detection, so
-this is now a *later comparison arm*, not the escape hatch. Same seeded pool
-split when it happens, so it is a controlled counterpart to exp1/exp8a.
+The original deferred whole-image classification pivot (EfficientNet-B2 /
+DINOv2 frozen) remains deferred — exp8 revived detection (§7) and §8 confirmed
+the recipe is stable; the pivot is now a *later comparison arm*, not the path.
 
 ## 7. exp8 — the correction (2026-05-19, runs the user executed)
 
@@ -246,3 +236,147 @@ in every run's `metrics.{json,txt}`). Ceiling note: at conf 0.25 the model
 emits only 43 boxes for 57 GT — box recall caps ~0.75 there regardless of
 rule; raising it needs lower conf (calibration) or aug/k-fold, not a looser
 rule.
+
+## 8. exp9 → exp10 → exp11 — the k-fold + augmentation chain (2026-05-20/21)
+
+The §6 plan ran in three controlled stages: cross-validate the exp8b headline
+(exp9), sweep augmentation levels (exp10), then paired-CV the most promising
+recipe (exp11). The chain replaced the single-fold exp8b 0.865 with a
+**cross-validated, paired headline** and validated the original
+`instructions.md` "colour is diagnostic" rule.
+
+### 8a. exp9 — 10-fold CV of exp8b (verify the single-fold number)
+
+Stratified 10-fold on (pool + locked-test = 362 positives) + 10-way shuffled
+~570 resolution-normalised negatives, fair 1:1 test slice per fold (no-skill
+0.50), inner 85/15 stratified train/val on the other 9 folds, blackbox test
+in every fold. Same recipe as exp8b otherwise (YOLO defaults — note this
+includes HSV jitter; see §8b).
+
+| metric | exp8b (single fold) | **kfold10 (mean ± std)** | range |
+|---|---|---|---|
+| screening_acc | 0.865 | **0.840 ± 0.063** (CI95 ±0.039) | [0.757, 0.932] |
+| det_rate_pos | 0.757 | 0.694 ± 0.126 | [0.514, 0.892] |
+| false_alarm_neg | 0.027 | **0.013 ± 0.034** | [0.000, 0.108] |
+| box R (iog≥0.5) | 0.439 | 0.429 ± 0.097 | [0.270, 0.633] |
+| loc IoG (hits) | 0.811 | **0.811 ± 0.026** | [0.752, 0.843] |
+| FA neg @ conf 0.001 | 0.946 | **0.618 ± 0.140** | [0.400, 0.829] |
+| val_stock mAP50 | 0.280 | 0.326 ± 0.095 | [0.221, 0.546] |
+
+**10/10 folds beat no-skill (0.50).** exp8b's 0.865 reproduces inside CI95
+(slightly above mean, not an outlier). **The FA@conf-0.001 "0.946 fires on
+everything" framing from §7b was a tail draw** — typical is 0.618 ± 0.140;
+4/10 folds are below 0.50 at conf 0.001 already. Calibration is still broken,
+just not catastrophically.
+
+Localisation IoG on hits = **0.811 ± 0.026** across folds — when the detector
+hits, the box covers >80% of the annotation in every fold, std 2.6 pp.
+Crop-quality is rock-solid.
+
+### 8b. exp10 — augmentation sweep on the exp8b split (6 levels, 1 seed)
+
+A controlled sweep across six YOLO augmentation configs on exp8b's static
+split — same data, same seed (42), only variable = the train kwargs. The
+seventh "level" missing from §7 was that **"exp1–8 = YOLO built-in only"
+quietly meant "YOLO defaults including `hsv_h=0.015, hsv_s=0.7, hsv_v=0.4`"**.
+The `instructions.md` §3 step 4 rule "No HSV — colour is diagnostic" was thus
+silently violated for every run on record.
+
+| level | screen_acc | det_rate | false_alm | F1_iog | mAP50 | FA@.001 | notes |
+|---|---|---|---|---|---|---|---|
+| off | 0.595 | 0.243 | 0.054 | 0.203 | 0.160 | 0.811 | fliplr only — model under-trains |
+| light | 0.676 | 0.378 | 0.027 | 0.354 | 0.224 | 0.946 | mild geom, no mosaic, no colour |
+| default (exp8b) | 0.865 | 0.757 | 0.027 | 0.500 | 0.280 | 0.946 | YOLO defaults — reproduces exp8b |
+| **geom_no_color** | **0.919** | **0.838** | **0.000** | **0.545** | **0.385** | **0.892** | defaults but hsv_*=0 |
+| heavy | 0.757 | 0.513 | 0.000 | 0.405 | 0.277 | 0.946 | defaults + mixup/copy_paste/big geom |
+| heavy_no_color | 0.784 | 0.568 | 0.000 | 0.447 | 0.330 | 0.892 | heavy + hsv_*=0 |
+
+Findings on the single split:
+
+1. **HSV-off lifts both recipes.** default → geom_no_color = +0.054 screening;
+   heavy → heavy_no_color = +0.027. Same sign, same direction.
+2. **Mosaic + scale + translate (in YOLO defaults) are essential** at ~277
+   thumbnails. off → default = +0.270 screening; without mosaic (light) the
+   model never reaches default's performance.
+3. **The kitchen sink (heavy) is independently bad,** beyond colour:
+   geom_no_color → heavy_no_color = −0.135 screening. mixup + copy_paste +
+   big rotate/scale/shear overwhelm the small dataset.
+4. **Aug is NOT the lever for calibration.** FA@.001 stayed in [0.81, 0.95]
+   across all six levels.
+
+**Caveat: 0.919 is one 85/15 split.** kfold10 default mean is 0.840 ± 0.063
+(§8a). geom_no_color's 0.919 sits +1.25σ above that — plausibly real, plausibly
+lucky. exp11 paired-tests it.
+
+### 8c. exp11 — paired 5-fold CV (the definitive HSV-off test)
+
+A fresh stratified 5-fold split (`_datasets/kfold5_splits.json`, K=5,
+~72 test pos + ~72 fair neg per fold). **Same five folds for both runs**;
+only variable = the aug config. This is the clean paired comparison §8b
+flagged was missing.
+
+| paired metric | default (HSV on) | **geom_no_color (HSV off)** | Δ (geom − default) |
+|---|---|---|---|
+| **screening_acc** | 0.741 ± **0.147** | **0.842 ± 0.041** | **+0.101**  (geom 3.6× tighter) |
+| **det_rate_pos** | **0.484** ± **0.297** | **0.703** ± 0.099 | **+0.219**  (geom 3.0× tighter) |
+| false_alarm_neg | 0.003 ± 0.006 | 0.020 ± 0.027 | −0.017 |
+| box F1 (iou≥0.5) | 0.254 ± 0.145 | 0.379 ± 0.041 | +0.125 |
+| box F1 (iog≥0.5) | 0.362 ± 0.193 | 0.525 ± 0.036 | +0.163 |
+| loc IoG (hits) | 0.826 ± 0.042 | 0.833 ± 0.017 | +0.007 |
+| FA neg @ conf 0.001 | 0.767 ± 0.128 | 0.702 ± 0.068 | +0.065 |
+| val_stock mAP50 | 0.252 ± 0.085 | 0.328 ± 0.067 | +0.075 |
+
+**Per-fold screening_acc (same fold = same split):**
+
+| fold | default | geom_no_color | Δ |
+|---|---|---|---|
+| 0 | **0.534** | 0.824 | **+0.290** |
+| 1 | 0.678 | 0.781 | +0.103 |
+| 2 | 0.868 | 0.875 | +0.007 |
+| 3 | 0.729 | 0.847 | +0.118 |
+| 4 | **0.894** | 0.880 | −0.014 |
+
+**geom_no_color wins 4/5 folds.** Win counts across every screening / box /
+mAP metric: **geom 4/5 vs default 1/5**. The only metric default "wins" is
+`false_alarm` (4/5) — but that's because default barely detects, not because
+it discriminates better; det_rate collapsed to 0.484 ± 0.297.
+
+**The fold-0 datum is striking.** Same data, same fold, same seed, only HSV
+differs:
+
+- default fold 0: caught **5 / 72 lesions** (det_rate 0.068) — training
+  essentially failed to converge into a useful detector on this fold.
+- geom_no_color fold 0: caught **47 / 72 lesions** (det_rate 0.649) — normal
+  performance.
+
+This is consistent with a **training-stability hypothesis** for HSV-off on
+small medical data, not just "colour is a feature, don't corrupt it." On
+~250-photo positive pools, HSV jitter appears to derail some training
+trajectories outright. **Hypothesis, not proof — we have one seed per fold,
+not multiple retrains.** Worth confirming with a multi-seed ablation if the
+finding ever matters more than the absolute number does.
+
+### 8d. Adopted verdict
+
+- **`geom_no_color` is the binary-detector baseline** (YOLO defaults +
+  `hsv_h=hsv_s=hsv_v=0`). Validated by paired 5-fold CV: +0.101 mean,
+  3.6× tighter std, wins 4/5 folds, better calibration, better mAP50,
+  comparable localisation.
+- **The `instructions.md` §3 step 4 "colour is diagnostic" rule is
+  empirically validated** (was "design assertion" until §8c).
+- **Honest cross-validated numbers** for the binary detector:
+  - screening_acc **0.842 ± 0.041**  (CI95 ±0.036, n=5 folds, paired-CV)
+  - det_rate_pos **0.703 ± 0.099**
+  - false_alarm_neg **0.020 ± 0.027**
+  - FA@conf-0.001 **0.702 ± 0.068**  (calibration: still the residual)
+  - loc IoG on hits **0.833 ± 0.017**
+- exp10's single-fold **0.919 was a lucky split**, not the headline. The
+  *direction* was real (HSV-off helps); the magnitude wasn't.
+- Cumulative across the 5 folds (all 362 positives + 362 fair negatives each
+  appeared in test once): **~254/362 lesion images caught, ~108 missed, ~7/362
+  false alarms**.
+
+Active brief now lives in **`HANDOFF.md` §NEXT**: yolov8 transfer-learning
+sweep on the same kfold5 splits (with `geom_no_color` aug locked in), then
+confidence calibration as the remaining residual. Whole-image classification
+pivot stays deferred — a later comparison arm, not the path.

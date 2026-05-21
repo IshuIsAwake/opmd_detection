@@ -1,0 +1,31 @@
+# aug sweep summary  (binary)  — levels present: off, light, default, geom_no_color, heavy, heavy_no_color
+# reference: exp8b single fold screening_acc 0.865 / kfold10 mean 0.840 ± 0.063 (CI95 ±0.039)
+
+# 1. AUG SWEEP TABLE  (binary, exp8b splits)
+  level           screen_acc   det_rate  false_alm      P_iou      R_iou     F1_iou      P_iog      R_iog     F1_iog      mAP50    FA@.001
+  off                 0.595      0.243      0.054      0.417      0.088      0.145      0.583      0.123      0.203      0.160      0.811
+  light               0.676      0.378      0.027      0.500      0.193      0.279      0.636      0.246      0.354      0.224      0.946
+  default             0.865      0.757      0.027      0.488      0.368      0.420      0.581      0.439      0.500      0.280      0.946
+  geom_no_color       0.919      0.838      0.000      0.476      0.351      0.404      0.643      0.474      0.545      0.385      0.892
+  heavy               0.757      0.513      0.000      0.518      0.246      0.333      0.630      0.298      0.405      0.277      0.946
+  heavy_no_color      0.784      0.568      0.000      0.536      0.263      0.353      0.679      0.333      0.447      0.330      0.892
+
+# 2. BEST LEVEL  (ranked by screening_acc @ conf 0.25)
+  geom_no_color  →  screening_acc = 0.9189
+  det_rate=0.8378  false_alarm=0.0000  F1_iog=0.5455  mAP50=0.3850  FA@.001=0.8919
+
+# 3. Δ vs DEFAULT  (positive = better than exp8b's recipe; false_alm and FA@.001 are inverted: − = better)
+  level           screen_acc   det_rate  false_alm      P_iou      R_iou     F1_iou      P_iog      R_iog     F1_iog      mAP50    FA@.001
+  off                -0.270     -0.514     -0.027     -0.072     -0.281     -0.275     +0.002     -0.316     -0.297     -0.120     +0.135
+  light              -0.189     -0.378     -0.000     +0.012     -0.175     -0.141     +0.055     -0.193     -0.146     -0.057     -0.000
+  geom_no_color      +0.054     +0.081     +0.027     -0.012     -0.018     -0.016     +0.061     +0.035     +0.045     +0.105     +0.054
+  heavy              -0.108     -0.243     +0.027     +0.030     -0.123     -0.087     +0.048     -0.140     -0.095     -0.003     -0.000
+  heavy_no_color     -0.081     -0.189     +0.027     +0.047     -0.105     -0.067     +0.097     -0.105     -0.053     +0.050     +0.054
+
+# 4. AUG CONFIGS (the train_kwargs_override per level, from run.json)
+  off             copy_paste=0.0, degrees=0.0, erasing=0.0, fliplr=0.5, flipud=0.0, hsv_h=0.0, hsv_s=0.0, hsv_v=0.0, mixup=0.0, mosaic=0.0, perspective=0.0, scale=0.0, shear=0.0, translate=0.0
+  light           copy_paste=0.0, degrees=5.0, erasing=0.0, fliplr=0.5, flipud=0.0, hsv_h=0.0, hsv_s=0.0, hsv_v=0.0, mixup=0.0, mosaic=0.0, perspective=0.0, scale=0.3, shear=0.0, translate=0.05
+  default         YOLO defaults (no overrides)
+  geom_no_color   hsv_h=0.0, hsv_s=0.0, hsv_v=0.0
+  heavy           copy_paste=0.3, degrees=10.0, erasing=0.6, mixup=0.15, mosaic=1.0, scale=0.7, shear=2.0, translate=0.15
+  heavy_no_color  copy_paste=0.3, degrees=10.0, erasing=0.6, hsv_h=0.0, hsv_s=0.0, hsv_v=0.0, mixup=0.15, mosaic=1.0, scale=0.7, shear=2.0, translate=0.15

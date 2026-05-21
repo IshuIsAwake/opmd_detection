@@ -1,0 +1,21 @@
+{
+  "experiment": "kfold5_geom_no_color_binary/fold_4",
+  "dataset_spec_name": "kfold5_geom_no_color_binary/fold_4",
+  "task": "detect",
+  "model_weights": "yolov8n.pt",
+  "class_names": [
+    "lesion"
+  ],
+  "data_yaml": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/_datasets/kfold5_geom_no_color_binary/fold_4/data.yaml",
+  "epochs": 100,
+  "imgsz": 640,
+  "batch": 8,
+  "amp": false,
+  "seed": 42,
+  "device": "0",
+  "train_kwargs_override": {
+    "hsv_h": 0.0,
+    "hsv_s": 0.0,
+    "hsv_v": 0.0
+  }
+}

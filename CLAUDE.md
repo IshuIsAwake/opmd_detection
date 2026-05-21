@@ -9,40 +9,64 @@ shared crop → EfficientNet-B2 5-class disease classifier → Grad-CAM**. If th
 detector finds nothing, the answer is "healthy" — there is no `Normal`
 classifier class.
 
-## ⚠ Read this before trusting the design (audit, 2026-05-19)
+## ⚠ Read this before trusting the design (audit + paired CV, 2026-05-21)
 
 A clean-baseline investigation under `Experimenting/` (controlled, no-classifier
-YOLO baselines) overturned two of the main pipeline's premises. **Do not
-re-derive or re-defend these — they were measured:**
+YOLO baselines) overturned two of the main pipeline's premises, retracted a
+third gloomy verdict via exp8, and validated the colour rule via exp11.
+**These were measured, not argued — do not re-derive or re-defend:**
 
-- The **"loose boxes" rationale is empirically false.** Every run shows
+- **"Loose boxes" rationale is empirically false.** Every run shows
   localisation-on-hits IoU 0.63–0.69 / IoG 0.80–0.92 — predictions are not
-  "tight boxes lost inside huge loose GT". The IoP-matching + train-classifier-
-  on-detector-crops machinery solves a problem that isn't there.
-- The **Roboflow scale-up does not transfer.** The main project's
-  "data clearly helps" was measured on `web_holdout` (Roboflow-derived =
-  in-domain). Controlled, on the original domain, the gain is ≈0; the
-  Roboflow→original domain shift is severe and structural (incl. a 250 px-vs-
-  640 px resolution gap).
-- **RETRACTED by exp8 (2026-05-19): "the detector is below a trivial baseline /
-  detection is dead".** That was a 570-negative base-rate artifact on top of a
-  real bug — exp1/exp2 trained on **zero negatives**. With negatives in train
-  and a fair 1:1 resolution-normalized test, **exp8b binary = 28/37 lesion
-  images caught, 1/37 false alarm, screening_acc 0.865** (no-skill 0.50);
-  exp8a 5-class 0.784. Detection is a credible screener; binary > 5-class with
-  a usable number. Do **not** repeat "detection is hopeless".
-- What *is* sound: the binary-detector-then-classifier **structure** (binary
-  ≈3× the recall of 5-class). The **only confound-free failure left is
-  confidence calibration** (conf-0.001 still fires on everything even after
-  negative training). Localisation headline metric is now **`iog>=0.5`** (the
-  IoU≥0.5 gate understated it; `iou>=0.5` kept for continuity) — wired into
-  `metrics.py`; this does not change det_rate (geometry-free, screening ≈0.75).
+  "tight boxes lost inside huge loose GT". The IoP-matching + train-
+  classifier-on-detector-crops machinery solves a problem that isn't there.
+- **Roboflow scale-up does not transfer.** "Data clearly helps" was measured
+  on `web_holdout` (Roboflow-derived = in-domain). Controlled, on the original
+  domain, the gain is ≈0; the Roboflow→original domain shift is severe and
+  structural (250 px vs 640 px resolution gap, camera/lighting).
+- **RETRACTED by exp8: "the detector is below a trivial baseline / detection
+  is dead".** That was a 570-negative base-rate artifact on top of a real bug
+  — exp1/exp2 trained on **zero negatives**. exp8b single-fold = 28/37 lesion
+  images caught, 1/37 false alarm, screening_acc 0.865. Detection is a
+  credible screener. Do **not** repeat "detection is hopeless".
+- **VALIDATED by exp11 paired 5-fold CV (2026-05-21): the
+  `instructions.md` "colour is diagnostic / no HSV" rule.** YOLO's defaults
+  silently apply `hsv_h=0.015, hsv_s=0.7, hsv_v=0.4` — exp1–10 all ran with
+  HSV jitter on. Paired 5-fold CV (`geom_no_color` = defaults but `hsv_*=0`)
+  beats default by **+0.101 paired screening, 3.6× tighter std, winning
+  4/5 folds**; on fold 0 default caught 5/72 lesions where geom_no_color
+  caught 47/72, suggesting HSV jitter destabilises training on small medical
+  data (one seed per fold — hypothesis, not proof). `geom_no_color` is now
+  the adopted binary-detector aug recipe.
+- **Cross-validated headline (`yolov8n` binary, `geom_no_color` aug, paired
+  5-fold CV) — these are the current trustworthy numbers:**
+  - screening_acc **0.842 ± 0.041** (CI95 ±0.036), range [0.781, 0.880]
+  - det_rate_pos **0.703 ± 0.099**
+  - false_alarm_neg **0.020 ± 0.027**
+  - FA neg @ conf 0.001 **0.702 ± 0.068** ← residual
+  - loc IoG on hits **0.833 ± 0.017**
+  - val_stock mAP50 **0.328 ± 0.067**
+  - Cumulative across the 5 folds: ~254/362 lesions caught, ~108 missed,
+    ~7/362 false alarms.
+  - exp10's single-fold 0.919 was a lucky split, **not** the headline.
+- **The two-stage *structure* is sound** (binary YOLO ≈3× the recall of
+  5-class on identical data; exp1→exp2). Localisation headline rule:
+  **`iog>=0.5`** ("≥half the lesion covered"), `iou>=0.5` kept for continuity
+  — wired into `metrics.py`. Headline is screening (det_rate +
+  false_alarm together), geometry-free.
+- **The one confound-free residual: confidence calibration.** FA@conf-0.001
+  ≈ 0.70 across the paired CV — better than exp8b's single-fold 0.946 tail
+  suggested, still bad. Aug + neg-training + CV none of them moved this.
 
-Full evidence is in **`Experimenting/RESULTS.md` §7** (results) **/ §6**
-(plan). The **active next step is augmentation + k-fold CV** (then
-calibration) — `HANDOFF.md` §NEXT. The whole-image classification pivot
-(EfficientNet/DINOv2) is **deferred, a later comparison arm — not the path**. The `src/` pipeline still runs as documented; treat its rationale as
-historical, not validated.
+Full evidence in **`Experimenting/RESULTS.md` §8** (the exp9 → exp10 → exp11
+chain). The **active next step is the yolov8 transfer-learning sweep** on
+the same kfold5 splits + `geom_no_color` aug, then confidence calibration —
+`HANDOFF.md` §NEXT. The whole-image classification pivot
+(EfficientNet-B2 / DINOv2 frozen) is **deferred, a later comparison arm —
+not the path**. The `src/` pipeline still runs as documented; treat its
+design rationale as historical record. **Use `geom_no_color` (= YOLO
+defaults but `hsv_h=hsv_s=hsv_v=0`) as the default detector training recipe
+in any new experiment.**
 
 ## Source-of-truth docs (read these; do not re-derive history from git — not a git repo)
 

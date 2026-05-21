@@ -18,6 +18,7 @@ Test set: _datasets/<run>/{images,labels}/test  (the tree that run was built
           on — deterministic, already on disk)
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -72,32 +73,67 @@ def main() -> None:
         gts = M._gt_for(ds / "labels" / "test" / f"{img.stem}.txt", w, h)
         per_image.append((gts, M._preds_from_result(res)))
 
-    print(f"\n# {run}  —  match-rule sweep "
-          f"({len(test_imgs)} test imgs, {n_classes}-class)\n"
-          f"# weights: {weights}\n"
-          f"# det_rate / false_alarm / screening_acc are geometry-free → "
-          f"IDENTICAL under every rule (shown once per conf).")
+    header = (f"\n# {run}  —  match-rule sweep "
+              f"({len(test_imgs)} test imgs, {n_classes}-class)\n"
+              f"# weights: {weights}\n"
+              f"# det_rate / false_alarm / screening_acc are geometry-free → "
+              f"IDENTICAL under every rule (shown once per conf).")
+    print(header)
+
+    report: dict = {
+        "run": run,
+        "weights": str(weights),
+        "n_test_images": len(test_imgs),
+        "n_classes": n_classes,
+        "class_names": names,
+        "sweep_by_conf": {},
+    }
+    txt_lines: list[str] = [header]
 
     for conf in M.CONFS:
         il = M._score(per_image, n_classes, conf)["image_level"]
-        print(f"\n== conf {conf} =="
-              f"  [screening invariant: "
-              f"det_rate_pos={il['detection_rate_on_positives']:.3f} "
-              f"({il['positives_flagged']}/{il['positives']})  "
-              f"false_alarm_neg={il['false_alarm_rate_on_negatives']:.3f} "
-              f"({il['negatives_flagged']}/{il['negatives']})  "
-              f"screening_acc={il['screening_accuracy']:.3f}]")
-        print(f"{'rule':<26} {'TP':>3} {'FP':>4} {'FN':>3}  "
-              f"{'P':>5} {'R':>5} {'F1':>5}   "
-              f"{'IoU':>5} {'IoP':>5} {'IoG':>5}  n")
+        head = (f"\n== conf {conf} =="
+                f"  [screening invariant: "
+                f"det_rate_pos={il['detection_rate_on_positives']:.3f} "
+                f"({il['positives_flagged']}/{il['positives']})  "
+                f"false_alarm_neg={il['false_alarm_rate_on_negatives']:.3f} "
+                f"({il['negatives_flagged']}/{il['negatives']})  "
+                f"screening_acc={il['screening_accuracy']:.3f}]")
+        cols = (f"{'rule':<26} {'TP':>3} {'FP':>4} {'FN':>3}  "
+                f"{'P':>5} {'R':>5} {'F1':>5}   "
+                f"{'IoU':>5} {'IoP':>5} {'IoG':>5}  n")
+        print(head)
+        print(cols)
+        txt_lines += [head, cols]
+
+        rule_rows: list[dict] = []
         for rule in M.MATCH_RULES:
             b = M._score(per_image, n_classes, conf, rule=rule)
             o, loc = b["overall"], b["localisation_on_hits"]
-            print(f"{rule.name:<26} {o['tp']:>3} {o['fp']:>4} {o['fn']:>3}  "
-                  f"{o['precision']:>5.3f} {o['recall']:>5.3f} "
-                  f"{o['f1']:>5.3f}   "
-                  f"{loc['mean_iou']:>5.3f} {loc['mean_iop']:>5.3f} "
-                  f"{loc['mean_iog']:>5.3f}  {loc['n']}")
+            line = (f"{rule.name:<26} {o['tp']:>3} {o['fp']:>4} {o['fn']:>3}  "
+                    f"{o['precision']:>5.3f} {o['recall']:>5.3f} "
+                    f"{o['f1']:>5.3f}   "
+                    f"{loc['mean_iou']:>5.3f} {loc['mean_iop']:>5.3f} "
+                    f"{loc['mean_iog']:>5.3f}  {loc['n']}")
+            print(line)
+            txt_lines.append(line)
+            rule_rows.append({
+                "rule": rule.name,
+                "overall": o,
+                "localisation_on_hits": loc,
+            })
+
+        report["sweep_by_conf"][f"conf_{conf}"] = {
+            "image_level_invariant": il,
+            "rules": rule_rows,
+        }
+
+    out_dir = settings.RESULTS_ROOT / run if (settings.RESULTS_ROOT / run).is_dir() \
+        else weights.parent
+    (out_dir / "metrics_match_rules.json").write_text(
+        json.dumps(report, indent=2))
+    (out_dir / "metrics_match_rules.txt").write_text("\n".join(txt_lines) + "\n")
+    print(f"\n→ wrote {out_dir}/metrics_match_rules.{{json,txt}}")
 
 
 if __name__ == "__main__":
