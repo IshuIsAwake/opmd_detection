@@ -1,0 +1,21 @@
+=== pad=0.0, conf=0.1 ===
+Positives (n=72, fold 3 test slice):
+  Caught                       : 67 / 72  (93.1%)
+    Caught + correct disease   : 42
+    Caught + wrong disease     : 25
+  Missed (YOLO silent)         : 5
+  Conditional disease accuracy : 62.7%  ← headline
+  System-level accuracy        : 58.3%
+
+Negatives (n=120, OCD Normals):
+  Correctly silent             : 102 / 120  (85.0%)
+  False alarmed                : 18 / 120  (15.0%)
+  FA classifier predictions    : Leukoplakia=1, Erythroplakia=3, OSMF=1, Lichen_Planus=8, NH_Ulcers=0, Normal=5
+
+Confusion matrix (caught positives only, rows=GT, cols=pred):
+             Leukop  Erythr    OSMF  Lichen  NH_Ulc  Normal
+  Leukoplaki      7       0       1       0       0       0
+  Erythropla      0      11       1       1       2       0
+  OSMF            0       2       6       1       0       0
+  Lichen_Pla      0       2       2       9       2       1
+  NH_Ulcers       2       3       3       2       9       0

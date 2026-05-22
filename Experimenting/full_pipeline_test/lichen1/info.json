@@ -1,0 +1,153 @@
+{
+  "image": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/internet_images/lichen1.jpg",
+  "image_size_wh": [
+    690,
+    420
+  ],
+  "detector_conf": 0.1,
+  "n_boxes": 2,
+  "boxes": [
+    {
+      "index": 0,
+      "xyxy": [
+        177.4947509765625,
+        144.8606414794922,
+        342.2591552734375,
+        402.8423156738281
+      ],
+      "wh": [
+        164.764404296875,
+        257.98167419433594
+      ],
+      "confidence": 0.4799308180809021,
+      "area_frac": 0.14667424730207126,
+      "crops": {
+        "0.00": {
+          "path": "box_0_pad_0.00.jpg",
+          "wh": [
+            165,
+            258
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 0.09131641685962677,
+              "Erythroplakia": 2.9299710149643943e-05,
+              "OSMF": 0.006966310553252697,
+              "Lichen_Planus": 0.8916223049163818,
+              "NH_Ulcers": 0.010065684095025063
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_0_pad_0.20.jpg",
+          "wh": [
+            230,
+            327
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 0.0019311629002913833,
+              "Erythroplakia": 1.7594775272300467e-05,
+              "OSMF": 0.00040497982990927994,
+              "Lichen_Planus": 0.9974892139434814,
+              "NH_Ulcers": 0.00015708309365436435
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_0_pad_0.40.jpg",
+          "wh": [
+            296,
+            378
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 0.017156386747956276,
+              "Erythroplakia": 2.6410678401589394e-05,
+              "OSMF": 0.009701636619865894,
+              "Lichen_Planus": 0.9710468053817749,
+              "NH_Ulcers": 0.0020687715150415897
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 1,
+      "xyxy": [
+        369.3455810546875,
+        128.2924041748047,
+        572.0320434570312,
+        306.5687255859375
+      ],
+      "wh": [
+        202.68646240234375,
+        178.2763214111328
+      ],
+      "confidence": 0.4030539095401764,
+      "area_frac": 0.12468666983066157,
+      "crops": {
+        "0.00": {
+          "path": "box_1_pad_0.00.jpg",
+          "wh": [
+            203,
+            179
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 0.1166405901312828,
+              "Erythroplakia": 5.405422598414589e-06,
+              "OSMF": 0.03807756304740906,
+              "Lichen_Planus": 0.8452537655830383,
+              "NH_Ulcers": 2.2658516172668897e-05
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_1_pad_0.20.jpg",
+          "wh": [
+            284,
+            249
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 0.3603653907775879,
+              "Erythroplakia": 8.743017133383546e-06,
+              "OSMF": 0.4142131507396698,
+              "Lichen_Planus": 0.22517944872379303,
+              "NH_Ulcers": 0.00023332165437750518
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_1_pad_0.40.jpg",
+          "wh": [
+            365,
+            321
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 0.21558156609535217,
+              "Erythroplakia": 9.724012670631055e-06,
+              "OSMF": 0.7674877643585205,
+              "Lichen_Planus": 0.01681082881987095,
+              "NH_Ulcers": 0.00011015192285412923
+            }
+          }
+        }
+      }
+    }
+  ]
+}

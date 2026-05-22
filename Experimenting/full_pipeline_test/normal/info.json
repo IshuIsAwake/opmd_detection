@@ -1,0 +1,10 @@
+{
+  "image": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/internet_images/normal.jpeg",
+  "image_size_wh": [
+    1502,
+    1386
+  ],
+  "detector_conf": 0.1,
+  "n_boxes": 0,
+  "boxes": []
+}

@@ -1,0 +1,224 @@
+{
+  "image": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/internet_images/eythro1.jpeg",
+  "image_size_wh": [
+    273,
+    185
+  ],
+  "detector_conf": 0.1,
+  "n_boxes": 3,
+  "boxes": [
+    {
+      "index": 0,
+      "xyxy": [
+        224.4971466064453,
+        40.44691848754883,
+        272.86907958984375,
+        130.8266143798828
+      ],
+      "wh": [
+        48.37193298339844,
+        90.37969589233398
+      ],
+      "confidence": 0.4850146174430847,
+      "area_frac": 0.08656253029925573,
+      "crops": {
+        "0.00": {
+          "path": "box_0_pad_0.00.jpg",
+          "wh": [
+            49,
+            91
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 0.0005901440163142979,
+              "Erythroplakia": 0.0014968825271353126,
+              "OSMF": 0.9901766180992126,
+              "Lichen_Planus": 0.0053537930361926556,
+              "NH_Ulcers": 0.0023825825192034245
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_0_pad_0.20.jpg",
+          "wh": [
+            58,
+            127
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 6.897479761391878e-05,
+              "Erythroplakia": 0.0005166696500964463,
+              "OSMF": 0.9980427026748657,
+              "Lichen_Planus": 0.0008034559432417154,
+              "NH_Ulcers": 0.0005681414622813463
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_0_pad_0.40.jpg",
+          "wh": [
+            68,
+            163
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 4.189325863990234e-06,
+              "Erythroplakia": 0.00015788509335834533,
+              "OSMF": 0.9981544613838196,
+              "Lichen_Planus": 0.0015215784078463912,
+              "NH_Ulcers": 0.00016192113980650902
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 1,
+      "xyxy": [
+        65.89161682128906,
+        56.620365142822266,
+        179.8812255859375,
+        132.22023010253906
+      ],
+      "wh": [
+        113.98960876464844,
+        75.5998649597168
+      ],
+      "confidence": 0.3914409279823303,
+      "area_frac": 0.17062863141111517,
+      "crops": {
+        "0.00": {
+          "path": "box_1_pad_0.00.jpg",
+          "wh": [
+            114,
+            75
+          ],
+          "classifier": {
+            "pred_id": 4,
+            "pred_name": "NH_Ulcers",
+            "softmax": {
+              "Leukoplakia": 0.0009524925262667239,
+              "Erythroplakia": 0.012852158397436142,
+              "OSMF": 0.0077985296957194805,
+              "Lichen_Planus": 0.0013426546938717365,
+              "NH_Ulcers": 0.9770541787147522
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_1_pad_0.20.jpg",
+          "wh": [
+            160,
+            105
+          ],
+          "classifier": {
+            "pred_id": 4,
+            "pred_name": "NH_Ulcers",
+            "softmax": {
+              "Leukoplakia": 1.0051409844891168e-05,
+              "Erythroplakia": 0.0592641644179821,
+              "OSMF": 0.0002069351467071101,
+              "Lichen_Planus": 0.000249305012403056,
+              "NH_Ulcers": 0.9402695298194885
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_1_pad_0.40.jpg",
+          "wh": [
+            205,
+            136
+          ],
+          "classifier": {
+            "pred_id": 4,
+            "pred_name": "NH_Ulcers",
+            "softmax": {
+              "Leukoplakia": 2.8809305163690624e-08,
+              "Erythroplakia": 0.04218333959579468,
+              "OSMF": 2.4922103492031056e-08,
+              "Lichen_Planus": 2.4688564735697582e-05,
+              "NH_Ulcers": 0.9577919244766235
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 2,
+      "xyxy": [
+        65.7704849243164,
+        44.87343978881836,
+        146.89340209960938,
+        132.68907165527344
+      ],
+      "wh": [
+        81.12291717529297,
+        87.81563186645508
+      ],
+      "confidence": 0.1900280863046646,
+      "area_frac": 0.141052573618423,
+      "crops": {
+        "0.00": {
+          "path": "box_2_pad_0.00.jpg",
+          "wh": [
+            81,
+            88
+          ],
+          "classifier": {
+            "pred_id": 4,
+            "pred_name": "NH_Ulcers",
+            "softmax": {
+              "Leukoplakia": 2.551705802034121e-05,
+              "Erythroplakia": 0.0024667063262313604,
+              "OSMF": 2.1562547772191465e-05,
+              "Lichen_Planus": 4.356735007604584e-05,
+              "NH_Ulcers": 0.9974426031112671
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_2_pad_0.20.jpg",
+          "wh": [
+            113,
+            123
+          ],
+          "classifier": {
+            "pred_id": 4,
+            "pred_name": "NH_Ulcers",
+            "softmax": {
+              "Leukoplakia": 1.3817087562983943e-07,
+              "Erythroplakia": 0.0030285618267953396,
+              "OSMF": 2.9113255095580826e-06,
+              "Lichen_Planus": 4.377444201963954e-05,
+              "NH_Ulcers": 0.9969246983528137
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_2_pad_0.40.jpg",
+          "wh": [
+            146,
+            158
+          ],
+          "classifier": {
+            "pred_id": 4,
+            "pred_name": "NH_Ulcers",
+            "softmax": {
+              "Leukoplakia": 1.2225484624650562e-07,
+              "Erythroplakia": 0.02410268783569336,
+              "OSMF": 2.027802636916931e-08,
+              "Lichen_Planus": 0.0005124518065713346,
+              "NH_Ulcers": 0.9753847122192383
+            }
+          }
+        }
+      }
+    }
+  ]
+}

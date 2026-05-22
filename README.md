@@ -1,341 +1,242 @@
-# Oral Lesion Screening
-
-Two-stage screening of oral photographs: a **YOLOv8-nano binary lesion
-detector** → one shared crop → an **EfficientNet-B2 5-class disease
-classifier** → Grad-CAM. If the detector finds nothing, the answer is
-"healthy" — there is no `Normal` classifier class.
-
-> **Authority for what is actually true: `Experimenting/RESULTS.md`** (§7
-> results, §6 plan). `instructions.md` = original design + the three abandoned
-> approaches. `HANDOFF.md` §NEXT = active brief. This README summarises; those
-> govern. (Not a git-history project — these docs are the record.)
-
+# OPMD_Detection — Oral Potentially Malignant Diseases Detection
 ---
 
-## 1. Current Status and Results
+## Current Headline — Full pipeline MVP (Exp Results §17, 2026-05-23)
 
-**State (2026-05-21): cross-validated binary detector is the headline.** The
-exp8 retraction held; the exp9 → exp10 → exp11 chain produced a paired,
-cross-validated baseline and validated the `instructions.md` "colour is
-diagnostic" rule. Active residual = **confidence calibration**.
+**EfficientNet-B0 fine-tune (Round 3 strong aug) + 4-view TTA on
+detector-emitted crops at conf = 0.10. Paired 5-fold CV, folds 1-4
+(fold 0 excluded), no source-image leakage.**
 
-The clean-baseline investigation under `Experimenting/` (no classifier head,
-nothing tuned, all single-variable controlled comparisons) settled:
-
-**Headline binary detector** — `yolov8n`, 100 epochs, `imgsz=640`, `batch=8`,
-seed 42, fair 1:1 resolution-normalized negatives, **`geom_no_color`
-augmentation** (= YOLO defaults but `hsv_h=hsv_s=hsv_v=0`); paired 5-fold CV
-on (pool + locked test = 362 positives) + 5-way negative slices; **decision
-threshold = conf 0.10** (adopted operating point; see RESULTS.md §9):
-
-| metric (paired 5-fold, conf=0.10) | mean ± std |
+| metric | value |
 |---|---|
-| **screening_acc** | **0.917 ± 0.031** |
-| det_rate_pos | 0.882 |
-| false_alarm_neg | 0.047 |
-| box F1 (iog≥0.5) at conf 0.25 | 0.525 ± 0.036 |
-| loc IoG on hits | 0.833 ± 0.017 |
-| val_stock mAP50 (geometry-free) | 0.328 ± 0.067 |
+| conditional disease accuracy | **0.660 ± 0.041** |
+| system-level accuracy | **0.597** |
+| catch rate (detector image-level recall) | 0.907 |
+| negative false-alarm rate | 0.059 |
 
-Cumulative across all 5 folds, conf=0.10: **~319 of 362 lesion images caught
-(88%), ~43 missed (12%), ~17 of 362 false alarms (5%)**. No-skill = 0.50.
+**Comparison vs §12 borrowed-OCD baseline** (EfficientNet-B2 trained on
+tight human-bbox crops of the same `pool/` images, ~90 % source-image
+leakage on its test slice): 0.627 / 0.583. The MVP beats it by
+**+3.3 pp cond_acc, +1.4 pp sys_acc** in a stricter no-leakage eval.
 
-The previous "0.842 ± 0.041" headline was the same model at the YOLO default
-conf=0.25 — a misleadingly conservative threshold that suppressed real-lesion
-firings in the [0.05, 0.25] range. The threshold sweep (`Experimenting/sweep
-_conf_threshold.py`) found the model's actual screening ceiling is flat
-across conf 0.05–0.10. **Operating-point knobs on the SAME model**, no
-retraining:
+## Detector — Exp 11 (paired 5-fold CV, binary YOLOv8n, `geom_no_color`)
 
-| operating point | screening | det_rate | false_alarm | use case |
+| metric | value |
+|---|---|
+| screening_acc * | **0.917 ± 0.031** |
+| det_rate_pos * | **0.882** |
+| false_alarm_neg * | **0.047** |
+| loc IoG on hits * | **0.833 ± 0.017** |
+
+**Test setup per fold:** ~290 positive images train + val, ~72 positive
+images + ~72 fair (resolution-normalized) negative images in the blackbox
+test slice (1:1 ratio → no-skill baseline 0.50). Across the 5 folds every
+one of the 362 original positives lands in test exactly once.
+
+\* See [Metrics — how we evaluate](#metrics--how-we-evaluate) below for
+what each number means and why we report these specifically (and not the
+usual box precision / box recall).
+
+The full chronological record of every experiment we ran — Rounds 1-3 of
+the classifier, the merge investigation, the TTA win, plus the detector
+retractions, dead ends, threshold sweep, OOD sanity check, and YOLO →
+old-classifier MVP measurement — lives in
+[Experiment_Results.md](Experiment_Results.md).
+
+---
+
+## Problem Statement
+
+Oral cancer is the **leading cancer in Indian men** and one of the top
+three cancers overall in India. The dominant drivers are **betel-nut /
+areca chewing, gutka, paan, and tobacco / cigar use** — habits that
+expose the oral mucosa to chronic carcinogens for years before any
+malignancy appears.
+
+That long lead-in window is the opportunity. Cancer in the mouth usually
+does not appear out of nowhere; it is preceded by **Oral Potentially
+Malignant Disorders (OPMDs)** — Leukoplakia (white patches),
+Erythroplakia (red patches), Oral Submucous Fibrosis (OSMF), Lichen
+Planus, and non-healing ulcers. A patient who reaches a dentist while
+still at the OPMD stage has dramatically better outcomes than one who
+waits until symptoms force the issue.
+
+The screening problem is access. Phone cameras are everywhere; dentists
+trained in oral oncology are not. A reliable phone-photo triage — "see a
+dentist" / "looks fine" — has real value.
+
+## Objective
+
+From one raw oral photograph:
+
+1. **Detect** whether a potentially malignant lesion is present.
+2. **Classify** it among the five OPMD classes (Leukoplakia /
+   Erythroplakia / OSMF / Lichen Planus / NH_Ulcers).
+3. **Recommend** a dentist visit, with a
+   plain-language explanation.
+
+---
+
+## Proposed Architecture
+
+Two stages, each doing one job:
+
+```
+full image
+   │
+   ▼
+YOLOv8n binary lesion detector       "is there a lesion, roughly where?"
+   │
+   ├── no detection ─────────────────► "looks fine — no visit needed"
+   │
+   └── lesion box(es)
+           │
+           ▼
+   shared crop function (pad + crop) — serve_pad = 0.20
+           │
+           ▼
+   EfficientNet-B0 5-class classifier, fine-tuned end-to-end
+   4-view test-time augmentation (identity, hflip, rot ±10°)
+   mean post-softmax across views → across boxes → argmax
+           │
+           ▼
+   disease + confidence + recommendation
+```
+
+### Why two stages?
+
+Our first attempt was a **YOLO → YOLO cascade** (binary YOLO → 5-class
+YOLO). Accuracy landed at ~20–30%. YOLO is optimised for mAP and
+bounding-box recall, not classification — asking it to do both tanks
+both. The fix is structural: keep YOLO at what it is good at ("is there
+a lesion?") and hand the cropped lesion to a real classifier.
+
+The exp1 → exp2 controlled comparison on identical data measured the gap
+directly: collapsing the 5 disease classes into a single `lesion` class
+**roughly tripled the detector's image-level recall** (det_rate 0.595 →
+0.838 on the same test set). That is the price of asking YOLO to
+classify, measured rather than asserted.
+
+The classifier was originally specified to train on **the detector's
+own crops** (an earlier attempt that trained EfficientNet on tight
+human-annotation crops scored ~75 % in eval and **~0 % in production**
+— total train / serve crop-distribution mismatch). The shipped MVP
+relaxes this to GT crops with pad = 0.4 because Phase 2 measurements
+(Experiment_Results.md §13–§17) showed train/serve crop-distribution
+mismatch is no longer the bottleneck on the B0 fine-tune, and TTA at
+inference time closes the residual geometric gap. A shared crop
+function (`pad_and_crop`) is still used by both the data builder and
+the inference path so the geometry stays consistent.
+
+If the detector is silent on an image, the answer is "healthy" — there
+is **no Normal class in the classifier**.
+
+---
+
+## Metrics — how we evaluate
+
+For a phone-photo screening tool, the usual object-detection metrics
+(**box precision, box recall, mAP**) are misleading.
+
+- They reward how *tightly* the predicted box matches the annotator's
+  box. On this dataset, the annotator boxes are deliberately rough
+  ("roughly where the lesion is") — not pixel-precise ground truth.
+- Clinically, we do not care whether the box is perfect. We care
+  whether, **at the image level**, the lesion was caught and whether
+  the crop sent to the classifier actually contains the lesion.
+
+So we report **image-level screening metrics** as the headline:
+
+| metric | what it measures | why we care |
+|---|---|---|
+| **screening_acc** | image-level: did we correctly fire on a positive image AND stay silent on a healthy image? | the screening verdict. No-skill baseline is 0.50 (1:1 test). |
+| **det_rate_pos** | of the positive images, what fraction did the detector fire on? | image-level recall. A miss = a patient who walks away when they shouldn't. |
+| **false_alarm_neg** | of the healthy images, what fraction did the detector fire on? | image-level specificity. False alarms erode trust in the screener. |
+| **loc IoG on hits** | when the detector did hit, what fraction of the annotated lesion does the predicted box cover? | the predicted box is padded then sent to the classifier — we want it to actually contain the lesion. |
+
+**Why `loc IoG` instead of `loc IoU`?** Because the annotated boxes are
+loose. A tight, well-placed prediction sitting inside a much bigger GT
+box will score low IoU even though it is "correct" for our purposes.
+IoG (Intersection over Ground-truth) asks the question we actually care
+about: *of the annotated lesion, how much did our prediction cover?*
+
+**What `0.833` means in practice.** When the detector commits to a
+lesion, its predicted box covers ~83% of the annotated lesion on
+average. The pipeline then pads this crop by ~20% before passing it to
+the classifier, so the lesion is effectively always within the
+classifier's view.
+
+Box-P, box-R, and mAP are still computed and reported per experiment in
+[Experiment_Results.md](Experiment_Results.md) for transparency — they
+just are not the headline.
+
+### Operating point
+
+The detector emits per-box scores in [0, 1]; a confidence threshold
+turns those into a decision. We adopted **conf = 0.10** as the default
+operating point. Other settings on the **same model**, no retraining:
+
+| conf | screening | det_rate | false_alarm | use case |
 |---|---|---|---|---|
-| conf=0.05 | 0.917 ± 0.019 | 0.932 | 0.097 | recall-first (highest catch) |
-| **conf=0.10 (adopted)** | **0.917 ± 0.031** | **0.882** | **0.047** | balanced |
-| conf=0.15 | 0.899 ± 0.021 | 0.838 | 0.039 | specificity-leaning |
-| conf=0.25 (YOLO default) | 0.842 ± 0.041 | 0.703 | 0.020 | prev. headline |
-
-**Settled / measured (this is what's true now):**
-- **Two-stage structure is sound.** Binary YOLO ≈ **3× the recall** of 5-class
-  YOLO on identical data (exp1→exp2). Don't make YOLO classify.
-- **The "loose boxes" rationale is empirically false.** Localisation-on-hits
-  IoU 0.63–0.69 every run — when the detector hits, boxes are fine.
-- **Roboflow scale-up does not transfer** (controlled exp2 vs exp7; experts
-  P 0.015–0.031 on the original domain).
-- **Detection is NOT dead.** "Below trivial baseline" was a 570-negative
-  base-rate artifact on top of a real bug (exp1/exp2 trained on zero negatives).
-  Fair 1:1 resolution-normalized negatives + negatives in train → screening
-  works (exp8b 0.865 single fold; 0.842 ± 0.041 across the paired 5-fold CV).
-- **Colour is diagnostic — VALIDATED.** YOLO's default `hsv_*` jitter was
-  silently applied through exp1–8. Paired 5-fold CV (exp11): **geom_no_color
-  beats default by +0.101 screening, with 3.6× tighter std, winning 4/5 folds**
-  (RESULTS.md §8c). On fold 0 the default recipe caught 5/72 lesions
-  (training near-collapse) where geom_no_color caught 47/72. The
-  `instructions.md` §3 step 4 rule is now empirically validated, not an
-  assertion.
-- **exp10's single-fold 0.919 was at conf=0.25 on a small slice — a
-  fair-but-fortunate snapshot of a model whose true CV-validated screening
-  ceiling is 0.917 at conf=0.05–0.10.** Direction was right; the "lucky
-  split" reading we adopted earlier was over-applied. The right reading:
-  exp10 reported a real signal at the wrong threshold; CV at the right
-  threshold lands on top of it.
-- **"Calibration is the residual" — partially resolved (RESULTS.md §9b).**
-  The FA@conf-0.001 ≈ 0.70 figure was an evaluation-knob artifact, not a
-  model bug — no operator runs at conf-0.001. At the adopted conf=0.10
-  operating point, false_alarm = 0.047. Proper post-hoc temperature scaling
-  on raw logits stays a worthwhile future exercise if downstream
-  probabilities are ever needed; they currently aren't.
-
-**Localisation metric.** The `IoU≥0.5` match gate understated localisation
-(it relabelled well-placed offset boxes as false positives). Headline is
-**`IoG≥0.5`** ("the detection covers ≥half the annotated lesion"); `IoU≥0.5`
-kept for continuity.
-
-**Active next:** **yolov8 transfer-learning sweep** on the same kfold5
-splits, with `geom_no_color` aug locked in (single-variable comparison
-against the kfold5_geom_no_color_binary headline). Then confidence
-calibration. The whole-image classification pivot (EfficientNet-B2 / DINOv2
-frozen) stays deferred — a later comparison arm, not the path.
+| 0.05 | 0.917 ± 0.019 | 0.932 | 0.097 | recall-first |
+| **0.10 (adopted)** | **0.917 ± 0.031** | **0.882** | **0.047** | balanced |
+| 0.15 | 0.899 ± 0.021 | 0.838 | 0.039 | specificity-leaning |
+| 0.25 (YOLO default) | 0.842 ± 0.041 | 0.703 | 0.020 | conservative |
 
 ---
 
-## 2. Problem Statement
-
-Oral potentially-malignant lesions are under-screened; a phone-photo triage
-("see a dentist / looks fine") has real value. The data available makes this
-hard:
-
-- **Tiny, low-resolution.** `pool/` = 325 annotated images, **one disease per
-  image**, 522 boxes; ~277 are ≈250 px thumbnails. Locked `test/` = 37 images
-  (57 boxes). Per-class images: Leukoplakia 42, Erythroplakia 70, OSMF 47,
-  Lichen Planus 76, NH_Ulcers 90.
-- **Noisy boxes.** Annotation `class_id` is reliable; box coordinates are
-  rough ("roughly where the lesion is").
-- **Domain gaps.** `data/Normal/` healthy mouths are 960–4000 px phone photos
-  vs the ≈250 px lesion thumbnails; Roboflow third-party data is a different
-  imaging domain again (and does not transfer).
-- **No `Normal` annotations** — healthy images are unlabelled negatives.
-
-Five disease classes: `Leukoplakia, Erythroplakia, OSMF, Lichen_Planus,
-NH_Ulcers`.
-
----
-
-## 3. Objective
-
-A reliable, demoable screener that, from one raw photo, answers **"is there a
-lesion (→ see a dentist) or not (→ looks fine)"** and, if yes, names the
-likely disease with a Grad-CAM. Concretely:
-
-- **Sensitivity + specificity together** on a fair, resolution-matched test —
-  the screening decision is `det_rate_pos` paired with `false_alarm_neg`, not
-  box geometry and not box recall.
-- **Headline is the paired k-fold mean ± std**, not any single test slice.
-  Through exp8 the locked 37-image `test/` was the sole headline; from exp9
-  onward it was dissolved into the kfold pool (every positive lands in test
-  once across the folds). The `src/` pipeline still measures on the legacy
-  `data/test/` for back-compat; the trustworthy current numbers live in
-  `Experimenting/results/kfold5_geom_no_color_binary/summary.txt`.
-- Honest measurement over leaderboard numbers — every experiment is a
-  controlled single-variable comparison, nothing tuned for a metric.
-
----
-
-## 4. Every Approach (the whole story)
-
-The project did not start at exp1 — that is the *clean restart*. The full arc:
-
-### Phase 0 — Early approaches, all abandoned (`instructions.md` §1)
-
-These are documented so they are **not repeated**:
-
-1. **YOLO → YOLO cascade** (binary YOLO → 5-class YOLO): ~20–30% accuracy.
-   YOLO optimises mAP, not classification; the cascade also tanked recall.
-   → use a real *classifier* for the disease stage.
-2. **EfficientNet on "smart crops":** ~75% in eval, **~0% in production.**
-   Trained on tight human-annotation crops, served full images — total
-   train/serve distribution mismatch. → train the classifier on the
-   *detector's own crops*, never on annotations.
-3. **LAB/CLAHE preprocessing:** hurt accuracy and was applied inconsistently
-   between train and serve. → raw RGB + ImageNet norm only.
-
-Also retired here: k-fold, Mixup/CutMix, heavy augmentation, Gradio.
-
-### Phase 1 — The two-stage rebuild (`src/`, `instructions.md`)
-
-The clean design: **YOLOv8n binary detector → one shared crop fn →
-EfficientNet-B2 5-class → Grad-CAM**, classifier trained on the detector's own
-crops (fixes mistake #2), IoP-containment matching, per-run storage. A
-controlled data experiment was bolted on — `original_only` vs `plus_roboflow`
-— which concluded "Roboflow data clearly helps." **That conclusion is now
-stale** (Phase 2 showed it was an in-domain measurement artifact).
-
-### Phase 2 — The clean-baseline audit (`Experimenting/`, exp1–7)
-
-Dependency-light, no classifier head, nothing tuned. "fair test" later = 37
-locked lesion + 37 resolution-normalized negatives (1:1, no-skill 0.50).
-
-| # | what | key finding |
-|---|---|---|
-| **exp1** | 5-class YOLOv8n, pool 85/15, locked-37 | weak; Leuk & OSMF dead (0/0/0 @0.25) |
-| **exp2** | binary YOLOv8n, same data | ≈3× exp1 recall → **structure sound** |
-| **exp3** | Leukoplakia expert (Roboflow→OBB) | mAP50 0.57 Roboflow val, **P 0.031** original |
-| **exp5** | OSMF expert (clean Roboflow source) | fails identically to exp3 → structural domain shift |
-| **exp7** | exp2 + 955 unique Roboflow imgs | F1/mAP50 flat, recall ↓ → **Roboflow doesn't transfer** |
-| (exp4/exp6) | Eryth / Lichen experts | designed, deliberately not run (exp5 decisive) |
-
-Audit verdicts: loose-box rationale **false**, Roboflow **doesn't transfer**,
-and (then) "detector below a trivial baseline" → pivot to whole-image
-classification recommended.
-
-### Phase 3 — The exp8 correction (the audit was too gloomy)
-
-A discussion pass found the "below trivial" verdict was a 570-negative
-base-rate artifact on top of a real bug — exp1/exp2 trained on **zero
-negatives**. Tested controlled:
-
-| # | what | key finding |
-|---|---|---|
-| **exp8a** | exp1 + resolution-normalized negatives | false-alarm 13→2 /37, screening **0.784**, dead classes revived |
-| **exp8b** | exp2 + resolution-normalized negatives | **false-alarm 21→1 /37, 28/37 caught, screening 0.865** |
-| **Number A** | re-score exp1/exp2 weights on the fair test, no retrain | fair ruler alone: 0.621→0.568 → resolution confound only ~5 pp |
-| **match-rule sweep** | re-score exp8 under IoU vs IoG, no retrain | IoU gate hid localisations → adopt **`IoG≥0.5`** |
-
-→ **detection revived**; "detection is dead" retracted. Helpers (no retrain):
-`eval_with_negatives.py` (raw 570-neg, superseded), `eval_fair_negatives.py`
-(Number A), `eval_match_rules.py`.
-
-### Phase 4 — k-fold + augmentation chain (2026-05-20/21, exp9 → exp10 → exp11 → §9 sweep)
-
-| # | what | key finding |
-|---|---|---|
-| **exp9** | 10-fold CV of exp8b recipe | screening 0.840 ± 0.063 — verified exp8b within noise; exp8b's FA@.001=0.946 was a tail draw (typical 0.618 ± 0.140) |
-| **exp10** | 6-level aug sweep on exp8b split | `geom_no_color` 0.919 single-fold — best of sweep; `heavy` and `light` both worse than `default`; `instructions.md` HSV rule directionally supported |
-| **exp11** | **Paired 5-fold CV: geom_no_color vs default** | **HSV-off validated.** Geom beats default +0.101 screening / +0.219 det_rate at conf=0.25, 3.6× tighter std, wins 4/5 folds. |
-| **§9 sweep** | **Post-hoc conf-threshold sweep on kfold5 weights** (inference only) | **New headline: 0.917 ± 0.031 screening_acc at conf=0.10.** +0.076 over conf=0.25 default. The model was firing on real lesions in conf [0.05, 0.25]; the default threshold was throwing those out. Calibration "residual" partially resolved as an evaluation-knob artifact. |
-
-The exp11 mechanism is striking: fold-0 of default caught 5/72 lesions
-(training near-collapse); same fold + HSV off caught 47/72. Consistent with
-HSV jitter destabilising training on ~250-photo medical data, though that
-mechanism remains a hypothesis (one seed per fold). exp10's 0.919 reading,
-once dismissed as "lucky split," now reconciles with the §9 finding: the
-model's true CV-validated ceiling at the right operating point is 0.917 —
-exp10 reported the signal at the wrong threshold and on a slightly
-fortunate split. Full chain in `Experimenting/RESULTS.md` §8 and §9.
-
-### Phase 5 — Active next
-
-**yolov8 transfer-learning sweep** on the same `kfold5_splits.json` with
-`geom_no_color` aug locked in (user will supply medical-domain pretrained
-weights in a fresh chat). Single-variable comparison against the kfold5
-binary headline (0.917 at conf=0.10). Whole-image classification
-(EfficientNet-B2 / DINOv2 frozen) stays a **deferred comparison arm**.
-Proper post-hoc temperature scaling on raw logits is a worthwhile future
-exercise if downstream probabilities are ever needed; for current screening
-behaviour the conf=0.10 operating point is enough.
-
----
-
-## 5. Repository Structure
+## Directory Structure
 
 ```
-Experimenting/             ← the truth: clean baselines + exp8 (CURRENT WORK)
-├── common/                  settings · datasets · negatives · metrics · obb_convert
-├── exp1..exp8b_*.py         one script per experiment (run by hand)
-├── eval_fair_negatives.py   Number A (no retrain)
-├── eval_match_rules.py      IoU vs IoG sweep (no retrain)
-├── results/<run>/           metrics.{json,txt} = the findings (weights gitignored)
-└── RESULTS.md / README.md   verdict (§7) / how-to-run
-
-src/                        ← the original two-stage pipeline (runnable history)
-├── common/                  geometry · crop (THE shared fn) · io · run_dir · dedup
-├── detector/ classifier/    build · train · evaluate · gradcam
-├── pipeline.py              full image → result (+ fallback)
-scripts/01..06_*.py          thin CLI entrypoints for the src/ pipeline
-app.py                       Streamlit demo (serves artifacts/latest)
-config.py                    static roots + knobs (arm-aware helpers)
-
-data/                       originals (READ-ONLY): pool/ test/ Normal/ additional/
-                            data/new_data/ + artifacts/ = generated (gitignored)
-CLAUDE.md HANDOFF.md instructions.md   design, brief, history
+.
+├── README.md                   ← you are here
+├── Experiment_Results.md       ← chronological record of every experiment
+├── HANDOFF.md                  ← current implementation brief (active scope)
+├── CLAUDE.md                   ← project-level instructions for AI assistants
+├── instructions.md             ← original design + the abandoned approaches
+│
+├── data/                       ← originals (READ-ONLY)
+│   ├── pool/                   325 lesion images + YOLO labels
+│   ├── test/                   37 locked lesion images (now dissolved into kfold)
+│   ├── Normal/                 570 healthy phone photos
+│   ├── additional/             Roboflow exports (Leukoplakia, OPMD-SEG, OSMF)
+│   └── new_data/               generated, gitignored
+│
+├── src/                        ← original two-stage pipeline (runnable history)
+│   ├── common/                 shared crop fn, geometry, io, run_dir, dedup
+│   ├── detector/  classifier/  build · train · evaluate · gradcam
+│   └── pipeline.py             full image → result
+│
+├── scripts/                    ← thin CLI entrypoints, 01..06_*.py
+│
+├── Experimenting/              ← clean-baseline + cross-validated experiments
+│   ├── exp_readme.md           how to run the experiment harness
+│   ├── common/                 settings · datasets · negatives · metrics · kfold
+│   ├── exp1..exp11_*.py        one script per experiment
+│   ├── sweep_conf_threshold.py post-hoc operating-point sweep
+│   ├── predict_bulk_sanity.py  OOD sanity check driver
+│   ├── predict_with_old_classifier.py  YOLO → OCD-classifier MVP
+│   └── results/<run>/          metrics · weights · plots (gitignored)
+│
+├── artifacts/                  ← per-run storage for src/ pipeline (gitignored)
+├── app.py                      ← Streamlit demo
+└── config.py                   ← single source of truth for paths + knobs
 ```
-
-Generated (`data/new_data/`, `artifacts/`, `Experimenting/_datasets/`,
-`*/train/`, `*.pt`) is regenerable and **gitignored** — see `.gitignore`.
 
 ---
 
-## 6. Setup
+## Setup
 
 ```bash
 eval "$(conda shell.bash hook)" && conda activate ai_env
-pip install -r requirements.txt        # includes imagehash (dedup)
+pip install -r requirements.txt
 ```
 
-GPU: RTX 3050 6 GB (batch sizes tuned for it). Ultralytics' AMP self-check is
-disabled (`DET_AMP=False`) — its helper-model download 404s here.
-**All GPU training is run by the user**; eval/re-score scripts are seconds.
+GPU: RTX 3050 6 GB — batch sizes are tuned for it. Ultralytics' AMP
+self-check is disabled (`DET_AMP = False`) because its helper-model
+download 404s in this environment.
 
----
-
-## 7. How to Reproduce the Results
-
-### The current work — `Experimenting/` (exp8, the real state)
-
-```bash
-# binary first — it is the better front-end
-python Experimenting/exp8b_binary_negatives.py        # GPU
-python Experimenting/exp8a_5class_negatives.py        # GPU
-python Experimenting/eval_fair_negatives.py binary_original   # Number A, seconds
-python Experimenting/eval_fair_negatives.py 5class_original   # Number A, seconds
-python Experimenting/eval_match_rules.py   binary_negatives   # sweep, seconds
-python Experimenting/eval_match_rules.py   5class_negatives   # sweep, seconds
-# earlier baselines: exp1_5class_original.py, exp2_binary_original.py, exp7_…
-```
-Each writes `Experimenting/results/<run>/metrics.{json,txt}` (now incl. the
-`match_rule_sweep` block). Knobs are env-overridable: `EXP_EPOCHS` (100),
-`EXP_IMGSZ` (640), `EXP_BATCH` (8), `EXP_DEVICE` (`0`).
-
-### The original two-stage pipeline — `src/` (runnable history)
-
-An arm-aware experiment (`original_only` control vs `plus_roboflow`
-treatment); its "Roboflow helps" conclusion is **stale** (overturned — §1).
-Retained because it runs end-to-end:
-
-```bash
-python scripts/01_build_detector_dataset.py --arm original_only
-python scripts/02_train_detector.py --arm original_only --out_dir yolov8n@640_original_only   # GPU
-python scripts/03_build_classifier_data.py
-python scripts/04_train_classifier.py                                                          # GPU
-python scripts/05_evaluate_pipeline.py
-python scripts/06_compare_runs.py artifacts/runs/<A> artifacts/runs/<B>
-streamlit run app.py                                   # demo
-```
-`03/04/05` read the arm from `artifacts/CURRENT_RUN`. `ORAL_SMOKE=1` slashes
-epochs for a fast end-to-end plumbing check (numbers are throwaway). Don't
-interleave the two arms.
-
----
-
-## 8. Notes & Invariants
-
-- **Headline = paired k-fold mean ± std** (current authority:
-  `Experimenting/results/kfold5_geom_no_color_binary/summary.txt`).
-  `data/test/` (37 imgs) was the sole headline through exp8; from exp9
-  onward it was dissolved into the 362-image kfold pool by user choice
-  (every positive lands in test once). `src/` still uses it as a separate
-  eval slice for back-compat; treat that as historical.
-- **Screening = det_rate + false_alarm together**, geometry-free. Box recall
-  and IoU/IoP/IoG are localisation / crop-quality, not the screening verdict.
-  Headline localisation rule: `IoG≥0.5` (`IoU≥0.5` kept for continuity).
-- **No `Normal` classifier class** — "healthy" = the detector finds nothing.
-- **Negatives must be resolution-normalized** (to the positives' ~276 px
-  median long side) in train *and* test, or the specificity number is a
-  resolution artifact.
-- **Originals are read-only**: `data/pool/`, `data/test/`, `data/Normal/`,
-  `data/additional/`. All generated output goes under `data/new_data/` /
-  `artifacts/` / `Experimenting/_datasets/` (gitignored, rebuildable).
-- Deliberately deferred until the baseline is trustworthy: heavy augmentation
-  zoo, LAB/CLAHE (raw RGB + ImageNet norm only). Light augmentation + k-fold
-  are the *active next step*, not part of the deferral.
-- Roboflow polygon labels need the dedicated parser (`read_yolo_label()`
-  silently drops them); use the polygon yolov8 exports, never `-obb`.
+For how to run individual experiments see
+[Experimenting/exp_readme.md](Experimenting/exp_readme.md). For the
+current active brief (what is being worked on right now) see
+[HANDOFF.md](HANDOFF.md).

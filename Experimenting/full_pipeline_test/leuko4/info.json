@@ -1,0 +1,366 @@
+{
+  "image": "/home/ishu/Projects/AI/Oral_cancer/Experimenting/internet_images/leuko4.jpeg",
+  "image_size_wh": [
+    276,
+    183
+  ],
+  "detector_conf": 0.1,
+  "n_boxes": 5,
+  "boxes": [
+    {
+      "index": 0,
+      "xyxy": [
+        174.26535034179688,
+        63.2028694152832,
+        235.70582580566406,
+        118.09080505371094
+      ],
+      "wh": [
+        61.44047546386719,
+        54.887935638427734
+      ],
+      "confidence": 0.28479310870170593,
+      "area_frac": 0.06676844980706305,
+      "crops": {
+        "0.00": {
+          "path": "box_0_pad_0.00.jpg",
+          "wh": [
+            62,
+            55
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 2.8957874746993184e-05,
+              "Erythroplakia": 0.004221410024911165,
+              "OSMF": 0.2970169186592102,
+              "Lichen_Planus": 0.6432420611381531,
+              "NH_Ulcers": 0.055490635335445404
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_0_pad_0.20.jpg",
+          "wh": [
+            86,
+            77
+          ],
+          "classifier": {
+            "pred_id": 4,
+            "pred_name": "NH_Ulcers",
+            "softmax": {
+              "Leukoplakia": 5.263605999061838e-05,
+              "Erythroplakia": 3.3425752917537466e-05,
+              "OSMF": 0.0925174430012703,
+              "Lichen_Planus": 0.07586618512868881,
+              "NH_Ulcers": 0.8315303325653076
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_0_pad_0.40.jpg",
+          "wh": [
+            110,
+            99
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 4.43919589088182e-06,
+              "Erythroplakia": 1.5269563391484553e-06,
+              "OSMF": 0.013260819017887115,
+              "Lichen_Planus": 0.7845375537872314,
+              "NH_Ulcers": 0.20219570398330688
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 1,
+      "xyxy": [
+        149.2599334716797,
+        61.42085647583008,
+        269.549560546875,
+        129.21363830566406
+      ],
+      "wh": [
+        120.28962707519531,
+        67.79278182983398
+      ],
+      "confidence": 0.25827455520629883,
+      "area_frac": 0.1614549862338799,
+      "crops": {
+        "0.00": {
+          "path": "box_1_pad_0.00.jpg",
+          "wh": [
+            121,
+            68
+          ],
+          "classifier": {
+            "pred_id": 4,
+            "pred_name": "NH_Ulcers",
+            "softmax": {
+              "Leukoplakia": 8.709281473784358e-07,
+              "Erythroplakia": 1.5473297025891952e-05,
+              "OSMF": 0.4220592677593231,
+              "Lichen_Planus": 0.03638017177581787,
+              "NH_Ulcers": 0.5415442585945129
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_1_pad_0.20.jpg",
+          "wh": [
+            151,
+            95
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 0.00011021624959539622,
+              "Erythroplakia": 2.557511834311299e-06,
+              "OSMF": 0.3828105628490448,
+              "Lichen_Planus": 0.3242015540599823,
+              "NH_Ulcers": 0.29287514090538025
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_1_pad_0.40.jpg",
+          "wh": [
+            175,
+            122
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 1.419106683897553e-05,
+              "Erythroplakia": 2.899465926020639e-06,
+              "OSMF": 0.014792155474424362,
+              "Lichen_Planus": 0.9144377112388611,
+              "NH_Ulcers": 0.07075304538011551
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 2,
+      "xyxy": [
+        143.69937133789062,
+        61.81099319458008,
+        239.31011962890625,
+        123.62041473388672
+      ],
+      "wh": [
+        95.61074829101562,
+        61.80942153930664
+      ],
+      "confidence": 0.17488867044448853,
+      "area_frac": 0.11700413884548837,
+      "crops": {
+        "0.00": {
+          "path": "box_2_pad_0.00.jpg",
+          "wh": [
+            95,
+            62
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 0.004396894946694374,
+              "Erythroplakia": 0.000152620516018942,
+              "OSMF": 0.9195927977561951,
+              "Lichen_Planus": 0.03191091865301132,
+              "NH_Ulcers": 0.04394683241844177
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_2_pad_0.20.jpg",
+          "wh": [
+            133,
+            87
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 5.238407175056636e-05,
+              "Erythroplakia": 3.6017722777614836e-06,
+              "OSMF": 0.1717323213815689,
+              "Lichen_Planus": 0.8090973496437073,
+              "NH_Ulcers": 0.019114335998892784
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_2_pad_0.40.jpg",
+          "wh": [
+            171,
+            111
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 1.88258145499276e-05,
+              "Erythroplakia": 8.610963959654327e-07,
+              "OSMF": 0.0008928171591833234,
+              "Lichen_Planus": 0.8404027819633484,
+              "NH_Ulcers": 0.15868468582630157
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 3,
+      "xyxy": [
+        120.45628356933594,
+        61.53164291381836,
+        247.61483764648438,
+        128.77638244628906
+      ],
+      "wh": [
+        127.15855407714844,
+        67.2447395324707
+      ],
+      "confidence": 0.1748783439397812,
+      "area_frac": 0.16929484137648368,
+      "crops": {
+        "0.00": {
+          "path": "box_3_pad_0.00.jpg",
+          "wh": [
+            128,
+            67
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 0.000632065930403769,
+              "Erythroplakia": 1.2274003893253393e-05,
+              "OSMF": 0.9687067270278931,
+              "Lichen_Planus": 0.02266981080174446,
+              "NH_Ulcers": 0.007979043759405613
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_3_pad_0.20.jpg",
+          "wh": [
+            178,
+            94
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 0.0013519000494852662,
+              "Erythroplakia": 6.581519119208679e-05,
+              "OSMF": 0.8677926659584045,
+              "Lichen_Planus": 0.07650492340326309,
+              "NH_Ulcers": 0.05428467318415642
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_3_pad_0.40.jpg",
+          "wh": [
+            206,
+            121
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 2.438125193293672e-05,
+              "Erythroplakia": 8.894716302165762e-06,
+              "OSMF": 0.02560391090810299,
+              "Lichen_Planus": 0.8554524779319763,
+              "NH_Ulcers": 0.11891041696071625
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 4,
+      "xyxy": [
+        68.28097534179688,
+        53.04213333129883,
+        200.20867919921875,
+        126.63128662109375
+      ],
+      "wh": [
+        131.92770385742188,
+        73.58915328979492
+      ],
+      "confidence": 0.1575065553188324,
+      "area_frac": 0.19221604542517,
+      "crops": {
+        "0.00": {
+          "path": "box_4_pad_0.00.jpg",
+          "wh": [
+            132,
+            74
+          ],
+          "classifier": {
+            "pred_id": 2,
+            "pred_name": "OSMF",
+            "softmax": {
+              "Leukoplakia": 0.0001417551829945296,
+              "Erythroplakia": 3.651656152214855e-05,
+              "OSMF": 0.8291707634925842,
+              "Lichen_Planus": 0.14107199013233185,
+              "NH_Ulcers": 0.029579052701592445
+            }
+          }
+        },
+        "0.20": {
+          "path": "box_4_pad_0.20.jpg",
+          "wh": [
+            185,
+            103
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 0.0013046262320131063,
+              "Erythroplakia": 0.004245585296303034,
+              "OSMF": 0.10560806840658188,
+              "Lichen_Planus": 0.6932430267333984,
+              "NH_Ulcers": 0.19559869170188904
+            }
+          }
+        },
+        "0.40": {
+          "path": "box_4_pad_0.40.jpg",
+          "wh": [
+            237,
+            132
+          ],
+          "classifier": {
+            "pred_id": 3,
+            "pred_name": "Lichen_Planus",
+            "softmax": {
+              "Leukoplakia": 0.000731326115783304,
+              "Erythroplakia": 0.0007758466526865959,
+              "OSMF": 0.14620082080364227,
+              "Lichen_Planus": 0.7991692423820496,
+              "NH_Ulcers": 0.05312269553542137
+            }
+          }
+        }
+      }
+    }
+  ]
+}
